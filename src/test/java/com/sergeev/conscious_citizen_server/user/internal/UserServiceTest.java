@@ -1,56 +1,137 @@
 package com.sergeev.conscious_citizen_server.user.internal;
 
-import com.sergeev.conscious_citizen_server.user.api.UserRegisteredEvent;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.*;
+import java.security.SecureRandom;
+import java.util.Optional;
 
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
-    private final UserRepository repository = mock(UserRepository.class);
-    private final ApplicationEventPublisher publisher = mock(ApplicationEventPublisher.class);
+    @Mock
+    private UserRepository repository;
 
-    private final UserService service = new UserService(repository, publisher);
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private ApplicationEventPublisher publisher;
+
+    @InjectMocks
+    private UserService userService;
+
+    private Long userId;
+    private User activeUser;
+
+    @BeforeEach
+    void setUp() {
+        SecureRandom secureRandom = new SecureRandom();
+        userId = Math.abs(secureRandom.nextLong());
+
+        activeUser = new User(
+                userId,
+                "John Doe",
+                "Russia",
+                "test@mail.com",
+                "+12345678901",
+                "encoded-password",
+                null,
+                null,
+                true
+        );
+    }
+
+    // =============================
+    // LOGIN
+    // =============================
 
     @Test
-    void shouldRegisterUserSuccessfully() {
+    void shouldLoginByEmailSuccessfully() {
 
-        when(repository.existsByEmail("test@mail.com")).thenReturn(false);
+        when(repository.findByEmail("test@mail.com"))
+                .thenReturn(Optional.of(activeUser));
 
-        User saved = User.builder()
-                .id(1L)
-                .fullName("John Doe")
-                .email("test@mail.com")
-                .phone("123")
-                .build();
+        when(passwordEncoder.matches("raw-password", "encoded-password"))
+                .thenReturn(true);
 
-        when(repository.save(any())).thenReturn(saved);
+        Long result = userService.login("test@mail.com", "raw-password");
 
-        Long id = service.register("John Doe", "test@mail.com", "123");
-
-        assertThat(id).isEqualTo(1L);
-
-        ArgumentCaptor<UserRegisteredEvent> captor =
-                ArgumentCaptor.forClass(UserRegisteredEvent.class);
-
-        verify(publisher).publishEvent(captor.capture());
-
-        assertThat(captor.getValue().userId()).isEqualTo(1L);
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(userId, result);
     }
 
     @Test
-    void shouldThrowIfEmailExists() {
+    void shouldLoginByPhoneSuccessfully() {
 
-        when(repository.existsByEmail("test@mail.com")).thenReturn(true);
+        when(repository.findByPhone("+12345678901"))
+                .thenReturn(Optional.of(activeUser));
 
-        assertThatThrownBy(() ->
-                service.register("John", "test@mail.com", "123")
-        ).isInstanceOf(IllegalArgumentException.class);
+        when(passwordEncoder.matches("raw-password", "encoded-password"))
+                .thenReturn(true);
 
-        verify(repository, never()).save(any());
+        Long result = userService.login("+12345678901", "raw-password");
+
+        Assertions.assertEquals(userId, result);
+    }
+
+    @Test
+    void shouldThrowIfUserNotFound() {
+
+        when(repository.findByEmail("unknown@mail.com"))
+                .thenReturn(Optional.empty());
+
+        Assertions.assertThrows(IllegalArgumentException.class, () ->
+                userService.login("unknown@mail.com", "pass")
+        );
+    }
+
+    @Test
+    void shouldThrowIfPasswordInvalid() {
+
+        when(repository.findByEmail("test@mail.com"))
+                .thenReturn(Optional.of(activeUser));
+
+        when(passwordEncoder.matches("wrong", "encoded-password"))
+                .thenReturn(false);
+
+        Assertions.assertThrows(IllegalArgumentException.class, () ->
+                userService.login("test@mail.com", "wrong")
+        );
+    }
+
+    @Test
+    void shouldThrowIfUserInactive() {
+
+        User inactiveUser = new User(
+                userId,
+                "John Doe",
+                "Russia",
+                "test@mail.com",
+                "+12345678901",
+                "encoded-password",
+                null,
+                null,
+                false
+        );
+
+        when(repository.findByEmail("test@mail.com"))
+                .thenReturn(Optional.of(inactiveUser));
+
+        when(passwordEncoder.matches("raw-password", "encoded-password"))
+                .thenReturn(true);
+
+        Assertions.assertThrows(IllegalStateException.class, () ->
+                userService.login("test@mail.com", "raw-password")
+        );
     }
 }

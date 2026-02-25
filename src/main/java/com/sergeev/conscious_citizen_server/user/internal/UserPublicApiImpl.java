@@ -1,7 +1,7 @@
 package com.sergeev.conscious_citizen_server.user.internal;
 
 import com.sergeev.conscious_citizen_server.user.api.UserApi;
-import com.sergeev.conscious_citizen_server.user.api.UserDto;
+import com.sergeev.conscious_citizen_server.user.api.dto.UserDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -12,8 +12,8 @@ class UserPublicApiImpl implements UserApi {
     private final UserService service;
 
     @Override
-    public Long registerUser(String fullName, String email, String phone) {
-        return service.register(fullName, email, phone);
+    public Long registerUser(String fullName, String email, String phone, String password) {
+        return service.register(fullName, email, phone, password);
     }
 
     @Override
@@ -27,4 +27,24 @@ class UserPublicApiImpl implements UserApi {
                 user.getPhone()
         );
     }
+
+    @Override
+    public Long login(String email, String rawPassword) {
+        return service.login(email, rawPassword);
+    }
+
+    @Override
+    public void initiatePasswordReset(String emailOrPhone) {
+        service.requestPasswordReset(emailOrPhone);
+    }
+
+    @Override
+    public void confirmPasswordReset(String token, String newPassword) {
+        service.resetPassword(token, newPassword);
+    }
+/*
+    @Override
+    public void updateProfile(UpdateProfileRequest request) {
+        service.updateProfile(request);
+    }*/
 }
