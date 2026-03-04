@@ -7,8 +7,10 @@ import org.springframework.modulith.test.ApplicationModuleTest;
 class ModulithStructureTest {
 
     @Test
-    void verifyModules() {}
+    void verifyModules() {
+    }
 
     @Test
-    void verifyModularStructure() {}
+    void verifyModularStructure() {
+    }
 }

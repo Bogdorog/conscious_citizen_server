@@ -15,4 +15,6 @@ public interface UserApi {
     //void updateProfile(UpdateProfileRequest request);
 
     UserDto getUser(Long id);
+
+    UserDto getUserByEmail(String email);
 }

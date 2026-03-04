@@ -1,5 +1,8 @@
 package com.sergeev.conscious_citizen_server.user.internal;
 
+import com.sergeev.conscious_citizen_server.user.internal.entity.User;
+import com.sergeev.conscious_citizen_server.user.internal.repository.UserRepository;
+import com.sergeev.conscious_citizen_server.user.internal.service.UserService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,9 +54,7 @@ class UserServiceTest {
         );
     }
 
-    // =============================
-    // LOGIN
-    // =============================
+    // Вход позитивные тесты
 
     @Test
     void shouldLoginByEmailSuccessfully() {
@@ -83,6 +84,8 @@ class UserServiceTest {
 
         Assertions.assertEquals(userId, result);
     }
+
+    // Вход негативные тесты
 
     @Test
     void shouldThrowIfUserNotFound() {
