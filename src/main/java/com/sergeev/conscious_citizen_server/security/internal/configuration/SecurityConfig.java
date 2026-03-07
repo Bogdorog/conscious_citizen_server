@@ -29,8 +29,8 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    public static final String SIGNIN_ENTRY_POINT = "/auth/signin";
-    public static final String SIGNUP_ENTRY_POINT = "/auth/signup";
+    public static final String SIGNIN_ENTRY_POINT = "/auth/register";
+    public static final String SIGNUP_ENTRY_POINT = "/auth/login";
     public static final String SWAGGER_ENTRY_POINT = "/swagger-ui/**";
     public static final String API_DOCS_ENTRY_POINT = "/api-docs/**";
     public static final String TOKEN_REFRESH_ENTRY_POINT = "/auth/refreshToken";

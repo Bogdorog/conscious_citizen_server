@@ -1,5 +1,6 @@
 package com.sergeev.conscious_citizen_server.user.internal.service;
 
+import com.sergeev.conscious_citizen_server.user.api.dto.AuthResult;
 import com.sergeev.conscious_citizen_server.user.api.dto.UserDto;
 import com.sergeev.conscious_citizen_server.user.api.dto.request.*;
 import com.sergeev.conscious_citizen_server.user.api.event.PasswordResetRequestedEvent;
@@ -60,7 +61,7 @@ class UserService {
         return user.getId();
     }
 
-    public Long login(LoginRequest request) {
+    public AuthResult login(LoginRequest request) {
 
         ContactIdentifier identifier =
                 ContactIdentifierParser.parse(request.emailOrPhone());
@@ -88,7 +89,9 @@ class UserService {
 
         publisher.publishEvent(new UserLoggedInEvent(user.getId()));
 
-        return user.getId();
+        //return user.getId();
+        AuthResult auth = null;
+        return auth;
     }
 
     @Transactional

@@ -1,6 +1,7 @@
 package com.sergeev.conscious_citizen_server.user.internal.service;
 
 import com.sergeev.conscious_citizen_server.user.api.UserApi;
+import com.sergeev.conscious_citizen_server.user.api.dto.AuthResult;
 import com.sergeev.conscious_citizen_server.user.api.dto.UserDto;
 import com.sergeev.conscious_citizen_server.user.api.dto.request.*;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,7 @@ class UserPublicApiImpl implements UserApi {
         return service.get(email);
     }
 
-    public Long login(LoginRequest request) {
+    public AuthResult login(LoginRequest request) {
         return service.login(request);
     }
 
