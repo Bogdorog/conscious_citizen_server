@@ -2,9 +2,7 @@ package com.sergeev.conscious_citizen_server.user.internal.service;
 
 import com.sergeev.conscious_citizen_server.user.api.UserApi;
 import com.sergeev.conscious_citizen_server.user.api.dto.UserDto;
-import com.sergeev.conscious_citizen_server.user.internal.entity.User;
-import com.sergeev.conscious_citizen_server.user.internal.mapper.UserMapper;
-import com.sergeev.conscious_citizen_server.user.internal.repository.UserRepository;
+import com.sergeev.conscious_citizen_server.user.api.dto.request.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -13,49 +11,28 @@ import org.springframework.stereotype.Component;
 class UserPublicApiImpl implements UserApi {
 
     private final UserService service;
-    private final UserRepository repository;
-    private final UserMapper mapper;
 
-    @Override
-    public Long registerUser(String fullName, String email, String phone, String password) {
-        return service.register(fullName, email, phone, password);
+    public Long registerUser(RegisterUserRequest request) {
+        return service.register(request);
     }
 
-    @Override
-    public UserDto getUser(Long id) {
-        User user = service.get(id);
-        return new UserDto(
-                user.getId(),
-                user.getFullName(),
-                user.getAddress(),
-                user.getEmail(),
-                user.getPhone()
-        );
+    public UserDto getUser(String email) {
+        return service.get(email);
     }
 
-    @Override
-    public UserDto getUserByEmail(String email) {
-        User user = repository.findByEmail(email).get();
-        return mapper.toResponse(user);
+    public Long login(LoginRequest request) {
+        return service.login(request);
     }
 
-    @Override
-    public Long login(String email, String rawPassword) {
-        return service.login(email, rawPassword);
+    public void initiatePasswordReset(PasswordResetRequest request) {
+        service.initiatePasswordReset(request);
     }
 
-    @Override
-    public void initiatePasswordReset(String emailOrPhone) {
-        service.initiatePasswordReset(emailOrPhone);
+    public void confirmPasswordReset(PasswordResetConfirmRequest request) {
+        service.confirmPasswordReset(request);
     }
 
-    @Override
-    public void confirmPasswordReset(String token, String newPassword) {
-        service.confirmPasswordReset(token, newPassword);
+    public UserDto updateProfile(UpdateProfileRequest request) {
+        return service.updateProfile(request);
     }
-/*
-    @Override
-    public void updateProfile(UpdateProfileRequest request) {
-        service.updateProfile(request);
-    }*/
 }

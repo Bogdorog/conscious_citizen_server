@@ -1,11 +1,14 @@
 package com.sergeev.conscious_citizen_server.user.internal.service;
 
+import com.sergeev.conscious_citizen_server.user.api.dto.UserDto;
+import com.sergeev.conscious_citizen_server.user.api.dto.request.*;
 import com.sergeev.conscious_citizen_server.user.api.event.PasswordResetRequestedEvent;
 import com.sergeev.conscious_citizen_server.user.api.event.UserLoggedInEvent;
 import com.sergeev.conscious_citizen_server.user.api.event.UserProfileUpdatedEvent;
 import com.sergeev.conscious_citizen_server.user.api.event.UserRegisteredEvent;
 import com.sergeev.conscious_citizen_server.user.internal.entity.PasswordResetToken;
 import com.sergeev.conscious_citizen_server.user.internal.entity.User;
+import com.sergeev.conscious_citizen_server.user.internal.mapper.UserMapper;
 import com.sergeev.conscious_citizen_server.user.internal.repository.PasswordResetTokenRepository;
 import com.sergeev.conscious_citizen_server.user.internal.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +29,7 @@ import java.time.LocalDateTime;
 @Service
 @RequiredArgsConstructor
 class UserService {
-
+    private final UserMapper userMapper;
     private final UserRepository repository;
     private final ApplicationEventPublisher publisher;
     private final PasswordEncoder passwordEncoder;
@@ -34,22 +37,19 @@ class UserService {
     private final PasswordChangeService passwordChangeService;
 
     @Transactional
-    public Long register(String fullName,
-                         String email,
-                         String phone,
-                         String rawPassword) {
+    public Long register(RegisterUserRequest request) {
 
-        if (repository.existsByEmail(email)) {
-            throw new IllegalArgumentException("Email already exists");
+        if (repository.existsByEmail(request.email())) {
+            throw new IllegalArgumentException("Пользователь с таким e-mail уже существует");
         }
 
-        String hash = passwordEncoder.encode(rawPassword);
+        String hash = passwordEncoder.encode(request.password());
 
         User user = repository.save(
                 User.builder()
-                        .fullName(fullName)
-                        .email(email)
-                        .phone(phone)
+                        .fullName(request.fullName())
+                        .email(request.email())
+                        .phone(request.phone())
                         .passwordHash(hash)
                         .active(true)
                         .build()
@@ -60,10 +60,10 @@ class UserService {
         return user.getId();
     }
 
-    public Long login(String emailOrPhone, String rawPassword) {
+    public Long login(LoginRequest request) {
 
         ContactIdentifier identifier =
-                ContactIdentifierParser.parse(emailOrPhone);
+                ContactIdentifierParser.parse(request.emailOrPhone());
 
         User user = switch (identifier) {
 
@@ -78,7 +78,7 @@ class UserService {
                                     new IllegalArgumentException("User not found"));
         };
 
-        if (!passwordEncoder.matches(rawPassword, user.getPasswordHash())) {
+        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             throw new IllegalArgumentException("Invalid credentials");
         }
 
@@ -92,26 +92,30 @@ class UserService {
     }
 
     @Transactional
-    public void updateProfile(Long id, String fullName, String phone) {
+    public UserDto updateProfile(UpdateProfileRequest request) {
 
-        User user = repository.findById(id)
+        User user = repository.findByEmail(request.email())
                 .orElseThrow();
 
-        user.setFullName(fullName);
-        user.setPhone(phone);
+        user.setFullName(request.fullName());
+        user.setPhone(request.phone());
+        user.setAddress(request.address());
 
-        publisher.publishEvent(new UserProfileUpdatedEvent(id));
+        publisher.publishEvent(new UserProfileUpdatedEvent(user.getId()));
+
+        return userMapper.toResponse(user);
     }
 
-    public User get(Long id) {
-        return repository.findById(id)
+    public UserDto get(String email) {
+        User user = repository.findByEmail(email)
                 .orElseThrow();
+        return userMapper.toResponse(user);
     }
     // Первый запрос о смене пароля
     @Transactional
-    public void initiatePasswordReset(String email) {
+    public void initiatePasswordReset(PasswordResetRequest request) {
 
-        User user = repository.findByEmail(email)
+        User user = repository.findByEmail(request.emailOrPhone())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         String rawToken = passwordChangeService.generateToken();
@@ -136,9 +140,9 @@ class UserService {
     }
     // Успешный ввод токена, смена пароля
     @Transactional
-    public void confirmPasswordReset(String token, String newPassword) {
+    public void confirmPasswordReset(PasswordResetConfirmRequest request) {
 
-        String tokenHash = passwordChangeService.hashToken(token);
+        String tokenHash = passwordChangeService.hashToken(request.token());
 
         PasswordResetToken resetToken =
                 tokenRepository.findByTokenHash(tokenHash)
@@ -156,7 +160,7 @@ class UserService {
         User user = repository.findById(resetToken.getUserId())
                 .orElseThrow();
 
-        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
         tokenRepository.invalidateAllForUser(user.getId());
 
         resetToken.markUsed();

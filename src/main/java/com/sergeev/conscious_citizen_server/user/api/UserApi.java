@@ -1,20 +1,19 @@
 package com.sergeev.conscious_citizen_server.user.api;
 
 import com.sergeev.conscious_citizen_server.user.api.dto.UserDto;
+import com.sergeev.conscious_citizen_server.user.api.dto.request.*;
 
 public interface UserApi {
 
-    Long registerUser(String fullName, String email, String phone, String password);
+    Long registerUser(RegisterUserRequest request);
 
-    Long login(String email, String rawPassword);
+    Long login(LoginRequest request);
 
-    void initiatePasswordReset(String emailOrPhone);
+    void initiatePasswordReset(PasswordResetRequest request);
 
-    void confirmPasswordReset(String token, String newPassword);
+    void confirmPasswordReset(PasswordResetConfirmRequest request);
 
-    //void updateProfile(UpdateProfileRequest request);
+    UserDto updateProfile(UpdateProfileRequest request);
 
-    UserDto getUser(Long id);
-
-    UserDto getUserByEmail(String email);
+    UserDto getUser(String email);
 }

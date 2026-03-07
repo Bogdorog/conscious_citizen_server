@@ -1,15 +1,12 @@
 package com.sergeev.conscious_citizen_server.user.internal;
 
 import com.sergeev.conscious_citizen_server.user.api.UserApi;
-import com.sergeev.conscious_citizen_server.user.api.dto.request.LoginRequest;
-import com.sergeev.conscious_citizen_server.user.api.dto.request.PasswordResetConfirmRequest;
-import com.sergeev.conscious_citizen_server.user.api.dto.request.PasswordResetRequest;
-import com.sergeev.conscious_citizen_server.user.api.dto.request.RegisterUserRequest;
+import com.sergeev.conscious_citizen_server.user.api.dto.request.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/user")
 @RequiredArgsConstructor
 class UserController {
 
@@ -17,31 +14,31 @@ class UserController {
 
     @PostMapping
     public Long register(@RequestBody RegisterUserRequest request) {
-        return api.registerUser(
-                request.fullName(),
-                request.email(),
-                request.phone(),
-                request.password()
-        );
+        return api.registerUser(request);
     }
 
-    @GetMapping("/{id}")
-    public Object get(@PathVariable Long id) {
-        return api.getUser(id);
+    @GetMapping("/{email}")
+    public Object get(@PathVariable String email) {
+        return api.getUser(email);
+    }
+
+    @PostMapping("/{email}")
+    public Object update(@RequestBody UpdateProfileRequest request) {
+        return api.updateProfile(request);
     }
 
     @PostMapping("/login")
-    public Long login(@RequestBody LoginRequest r) {
-        return api.login(r.emailOrPhone(), r.password());
+    public Long login(@RequestBody LoginRequest request) {
+        return api.login(request);
     }
 
     @PostMapping("/password/reset/request")
-    public void requestReset(@RequestBody PasswordResetRequest r) {
-        api.initiatePasswordReset(r.emailOrPhone());
+    public void requestReset(@RequestBody PasswordResetRequest request) {
+        api.initiatePasswordReset(request);
     }
 
     @PostMapping("/password/reset/confirm")
-    public void confirmReset(@RequestBody PasswordResetConfirmRequest r) {
-        api.confirmPasswordReset(r.token(), r.newPassword());
+    public void confirmReset(@RequestBody PasswordResetConfirmRequest request) {
+        api.confirmPasswordReset(request);
     }
 }
