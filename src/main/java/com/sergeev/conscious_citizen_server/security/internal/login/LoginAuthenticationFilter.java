@@ -1,8 +1,8 @@
 package com.sergeev.conscious_citizen_server.security.internal.login;
 
-import com.sergeev.conscious_citizen_server.security.api.dto.SigninDTO;
 import com.sergeev.conscious_citizen_server.security.internal.exception.AuthMethodNotSupportedException;
 import com.sergeev.conscious_citizen_server.security.internal.utils.JsonUtils;
+import com.sergeev.conscious_citizen_server.user.api.dto.request.LoginRequest;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -44,18 +44,18 @@ public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingF
             throw new AuthMethodNotSupportedException("Authentication method not supported");
         }
 
-        SigninDTO signinDTO;
+        LoginRequest loginRequest;
         try {
-            signinDTO = JsonUtils.fromReader(request.getReader(), SigninDTO.class);
+            loginRequest = JsonUtils.fromReader(request.getReader(), LoginRequest.class);
         } catch (Exception e) {
             throw new AuthenticationServiceException("Invalid login request payload");
         }
 
-        if (StringUtils.isBlank(signinDTO.getUsername()) || StringUtils.isEmpty(signinDTO.getPassword())) {
+        if (StringUtils.isBlank(loginRequest.emailOrPhone()) || StringUtils.isEmpty(loginRequest.password())) {
             throw new AuthenticationServiceException("Username or Password not provided");
         }
 
-        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(signinDTO.getUsername(), signinDTO.getPassword());
+        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(loginRequest.emailOrPhone(), loginRequest.password());
         token.setDetails(authenticationDetailsSource.buildDetails(request));
         return this.getAuthenticationManager().authenticate(token);
     }

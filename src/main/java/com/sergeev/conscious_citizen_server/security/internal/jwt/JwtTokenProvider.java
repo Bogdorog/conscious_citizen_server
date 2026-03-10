@@ -2,6 +2,7 @@ package com.sergeev.conscious_citizen_server.security.internal.jwt;
 
 import com.sergeev.conscious_citizen_server.security.internal.exception.ExpiredTokenException;
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import javax.crypto.SecretKey;
 import java.util.Date;
 // В этом классе происходит генерация jwt
 @Component
@@ -23,8 +25,7 @@ public class JwtTokenProvider {
     public static final String JWT_TOKEN_HEADER_PARAM = HEADER;
     public static final String HEADER_PREFIX = "Bearer ";
     private final UserDetailsService userDetailsService;
-    @Value("${security.jwt.secret}")
-    private String jwtSecret;
+    private SecretKey jwtSecret = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
     @Value("${security.jwt.tokenExpirationTime}")
     private int tokenExpirationInSec;

@@ -38,7 +38,7 @@ public class RefreshTokenAuthenticationFilter extends AbstractAuthenticationProc
         validateRequest(request);
         RefreshTokenDTO refreshTokenDto = getRefreshTokenDTO(request);
         validateRefreshToken(refreshTokenDto);
-        return getAuthenticationManager().authenticate(new RefreshJwtAuthenticationToken(refreshTokenDto.getRefreshToken()));
+        return getAuthenticationManager().authenticate(new RefreshJwtAuthenticationToken(refreshTokenDto.refreshToken()));
     }
 
     private void validateRequest(final HttpServletRequest request) {
@@ -51,7 +51,7 @@ public class RefreshTokenAuthenticationFilter extends AbstractAuthenticationProc
     }
 
     private static void validateRefreshToken(final RefreshTokenDTO refreshTokenDto) {
-        if (StringUtils.isBlank(refreshTokenDto.getRefreshToken())) {
+        if (StringUtils.isBlank(refreshTokenDto.refreshToken())) {
             throw new AuthenticationServiceException("Username or Password not provided");
         }
     }

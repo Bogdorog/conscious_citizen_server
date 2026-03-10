@@ -8,6 +8,7 @@ import com.sergeev.conscious_citizen_server.user.api.event.UserLoggedInEvent;
 import com.sergeev.conscious_citizen_server.user.api.event.UserProfileUpdatedEvent;
 import com.sergeev.conscious_citizen_server.user.api.event.UserRegisteredEvent;
 import com.sergeev.conscious_citizen_server.user.internal.entity.PasswordResetToken;
+import com.sergeev.conscious_citizen_server.user.internal.entity.Role;
 import com.sergeev.conscious_citizen_server.user.internal.entity.User;
 import com.sergeev.conscious_citizen_server.user.internal.mapper.UserMapper;
 import com.sergeev.conscious_citizen_server.user.internal.repository.PasswordResetTokenRepository;
@@ -45,13 +46,17 @@ class UserService {
         }
 
         String hash = passwordEncoder.encode(request.password());
+        // У всех по умолчанию роль пользователя
+        Role role = new Role(2L, "USER");
 
         User user = repository.save(
                 User.builder()
                         .fullName(request.fullName())
                         .email(request.email())
                         .phone(request.phone())
+                        .address(request.address())
                         .passwordHash(hash)
+                        .role(role)
                         .active(true)
                         .build()
         );

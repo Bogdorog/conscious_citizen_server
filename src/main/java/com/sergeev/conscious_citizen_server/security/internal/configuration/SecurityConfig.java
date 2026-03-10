@@ -3,6 +3,7 @@ package com.sergeev.conscious_citizen_server.security.internal.configuration;
 import com.sergeev.conscious_citizen_server.security.api.exception.ErrorResponseHandler;
 import com.sergeev.conscious_citizen_server.security.internal.jwt.JwtTokenProvider;
 import com.sergeev.conscious_citizen_server.security.internal.jwt.RefreshTokenAuthenticationFilter;
+import com.sergeev.conscious_citizen_server.security.internal.jwt.TokenAuthenticationFilter;
 import com.sergeev.conscious_citizen_server.security.internal.login.LoginAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -12,6 +13,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -29,29 +31,30 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    public static final String SIGNIN_ENTRY_POINT = "/auth/register";
-    public static final String SIGNUP_ENTRY_POINT = "/auth/login";
+    public static final String SIGNIN_ENTRY_POINT = "/auth/login";
+    public static final String SIGNUP_ENTRY_POINT = "/auth/register";
     public static final String SWAGGER_ENTRY_POINT = "/swagger-ui/**";
     public static final String API_DOCS_ENTRY_POINT = "/api-docs/**";
     public static final String TOKEN_REFRESH_ENTRY_POINT = "/auth/refreshToken";
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
     private final AuthenticationSuccessHandler authenticationSuccessHandler;
-
+    private final AuthenticationFailureHandler failureHandler;
+    private final UserDetailsService userDetailsService;
     private final ErrorResponseHandler accessDeniedHandler;
 
-    private final AuthenticationFailureHandler failureHandler;
 
     public SecurityConfig(final JwtTokenProvider jwtTokenProvider,
-                                 final AuthenticationManager authenticationManager,
-                                 @Qualifier("loginAuthenticationSuccessHandler") final AuthenticationSuccessHandler authenticationSuccessHandler,
-                                 final ErrorResponseHandler accessDeniedHandler,
-                                 final AuthenticationFailureHandler failureHandler) {
+                          final AuthenticationManager authenticationManager,
+                          @Qualifier("loginAuthenticationSuccessHandler") final AuthenticationSuccessHandler authenticationSuccessHandler,
+                          final ErrorResponseHandler accessDeniedHandler,
+                          final AuthenticationFailureHandler failureHandler, UserDetailsService userDetailsService) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.authenticationManager = authenticationManager;
         this.authenticationSuccessHandler = authenticationSuccessHandler;
         this.accessDeniedHandler = accessDeniedHandler;
         this.failureHandler = failureHandler;
+        this.userDetailsService = userDetailsService;
     }
 
     @Bean
@@ -82,6 +85,7 @@ public class SecurityConfig {
                         .requestMatchers(TOKEN_REFRESH_ENTRY_POINT).permitAll()
                         .anyRequest().authenticated()
                 )
+                .addFilterBefore(buildTokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(buildLoginProcessingFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(buildRefreshTokenProcessingFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
@@ -92,6 +96,11 @@ public class SecurityConfig {
         LoginAuthenticationFilter filter = new LoginAuthenticationFilter(SIGNIN_ENTRY_POINT,
                 authenticationSuccessHandler, failureHandler);
         filter.setAuthenticationManager(this.authenticationManager);
+        return filter;
+    }
+
+    protected TokenAuthenticationFilter buildTokenAuthenticationFilter() {
+        TokenAuthenticationFilter filter = new TokenAuthenticationFilter(jwtTokenProvider, userDetailsService);
         return filter;
     }
 
