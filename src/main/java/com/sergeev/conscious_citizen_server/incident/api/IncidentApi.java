@@ -1,0 +1,12 @@
+package com.sergeev.conscious_citizen_server.incident.api;
+
+import com.sergeev.conscious_citizen_server.incident.api.dto.IncidentResponse;
+import com.sergeev.conscious_citizen_server.incident.api.dto.request.IncidentRequest;
+
+import java.util.List;
+
+public interface IncidentApi {
+    IncidentResponse createIncident(IncidentRequest request, Long userId);
+
+    List<IncidentResponse> getAllIncidents();
+}
