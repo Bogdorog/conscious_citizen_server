@@ -1,0 +1,12 @@
+ALTER TABLE photos
+    ADD COLUMN IF NOT EXISTS file_name VARCHAR(255) NOT NULL,
+    ADD COLUMN new_id UUID DEFAULT gen_random_uuid(),
+    DROP COLUMN id;
+ALTER TABLE photos
+    RENAME COLUMN new_id TO id;
+ALTER TABLE photos
+    ALTER COLUMN id SET NOT NULL,
+    ADD CONSTRAINT photos_pkey PRIMARY KEY (id);
+
+INSERT INTO roles VALUES (1, 'ADMIN'), (2, 'USER')
+ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
