@@ -1,11 +1,13 @@
 package com.sergeev.conscious_citizen_server.incident.internal.service;
 
 import com.sergeev.conscious_citizen_server.incident.api.dto.IncidentResponse;
+import com.sergeev.conscious_citizen_server.incident.api.dto.IncidentShortResponse;
 import com.sergeev.conscious_citizen_server.incident.api.dto.request.IncidentRequest;
 import com.sergeev.conscious_citizen_server.incident.internal.entity.Incident;
 import com.sergeev.conscious_citizen_server.incident.internal.mapper.IncidentMapper;
 import com.sergeev.conscious_citizen_server.incident.internal.repository.IncidentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +20,25 @@ public class IncidentService {
     private final NominatimService nominatimService;
     private final IncidentMapper mapper;
 
+    @Cacheable(value = "incident-map")
+    public List<IncidentShortResponse> getAll() {
+
+        return repository.findAll()
+                .stream()
+                .map(mapper::toShortDto)
+                .toList();
+    }
+
+    // 📌 ДЕТАЛЬНЫЙ ИНЦИДЕНТ
+    @Cacheable(value = "incident-details", key = "#id")
+    public IncidentResponse getById(Long id) {
+
+        Incident incident = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Not found"));
+
+        return mapper.toDto(incident);
+    }
+
     public IncidentResponse createIncident(IncidentRequest request, Long userId) {
 
         Incident incident = new Incident();
@@ -29,7 +50,7 @@ public class IncidentService {
 
         String address = nominatimService.reverse(
                 request.latitude(),
-                request.latitude()
+                request.longitude()
         );
 
         incident.setAddress(address);
@@ -38,14 +59,6 @@ public class IncidentService {
         Incident saved = repository.save(incident);
 
         return mapper.toDto(saved);
-    }
-
-    public List<IncidentResponse> getAll() {
-
-        return repository.findAll()
-                .stream()
-                .map(mapper::toDto)
-                .toList();
     }
 
 }

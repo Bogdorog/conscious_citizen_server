@@ -2,6 +2,7 @@ package com.sergeev.conscious_citizen_server.incident.internal.controller;
 
 import com.sergeev.conscious_citizen_server.incident.api.IncidentApi;
 import com.sergeev.conscious_citizen_server.incident.api.dto.IncidentResponse;
+import com.sergeev.conscious_citizen_server.incident.api.dto.IncidentShortResponse;
 import com.sergeev.conscious_citizen_server.incident.api.dto.request.IncidentRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +25,7 @@ public class IncidentController {
     }
 
     @GetMapping
-    public List<IncidentResponse> getAll() {
+    public List<IncidentShortResponse> getAll() {
         return incidentApi.getAllIncidents();
     }
 
