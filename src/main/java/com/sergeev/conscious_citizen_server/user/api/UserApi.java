@@ -6,7 +6,7 @@ import com.sergeev.conscious_citizen_server.user.api.dto.request.*;
 
 public interface UserApi {
 
-    Long registerUser(RegisterUserRequest request);
+    void registerUser(RegisterUserRequest request);
 
     AuthResult login(LoginRequest request);
 

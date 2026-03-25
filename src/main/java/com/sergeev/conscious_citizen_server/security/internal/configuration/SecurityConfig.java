@@ -100,8 +100,7 @@ public class SecurityConfig {
     }
 
     protected TokenAuthenticationFilter buildTokenAuthenticationFilter() {
-        TokenAuthenticationFilter filter = new TokenAuthenticationFilter(jwtTokenProvider, userDetailsService);
-        return filter;
+        return new TokenAuthenticationFilter(jwtTokenProvider, userDetailsService);
     }
 
     @Bean

@@ -11,7 +11,7 @@ public enum ErrorCode {
     ACCESS_DENIED(20, HttpStatus.FORBIDDEN);
 
     private final int code;
-    private HttpStatus status;
+    private final HttpStatus status;
 
     ErrorCode(final int code, final HttpStatus status) {
         this.code = code;

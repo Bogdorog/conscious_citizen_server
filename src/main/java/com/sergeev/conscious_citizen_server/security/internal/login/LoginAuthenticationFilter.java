@@ -23,7 +23,7 @@ import java.io.IOException;
 
 public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
-    private Logger logger = LoggerFactory.getLogger(LoginAuthenticationFilter.class);
+    private final Logger logger = LoggerFactory.getLogger(LoginAuthenticationFilter.class);
     private final AuthenticationSuccessHandler successHandler;
     private final AuthenticationFailureHandler failureHandler;
     public LoginAuthenticationFilter(final String defaultFilterProcessesUrl,
@@ -39,7 +39,7 @@ public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingF
                                                 final HttpServletResponse response) throws AuthenticationException {
         if (!HttpMethod.POST.name().equals(request.getMethod())) {
             if(logger.isDebugEnabled()) {
-                logger.debug("Authentication method not supported. Request method: " + request.getMethod());
+                logger.debug("Authentication method not supported. Request method: {}", request.getMethod());
             }
             throw new AuthMethodNotSupportedException("Authentication method not supported");
         }

@@ -6,29 +6,16 @@ import org.springframework.http.HttpStatus;
 
 import java.util.Date;
 
-public class ErrorResponse {
-    @NotBlank
-    @Schema(description = "Error message", example = "Error message")
-    private final String message;
-
-    @NotBlank
-    @Schema(description = "Error code: " +
-            "1 - General error (HTTP: 500 - Internal Server Error), " +
-            "2 - Authentication failed (HTTP: 401 - Unauthorized), " +
-            "3 - JWT token expired (HTTP: 401 - Unauthorized), " +
-            "10 - Bad request parameters (HTTP: 400 - Bad Request), " +
-            "20 - Access denied (HTTP: 403 - Forbidden)",
-            example = "2")
-    private final ErrorCode code;
-
-    @NotBlank
-    @Schema(description = "Error code", example = "401")
-    private final HttpStatus status;
-
-    @NotBlank
-    @Schema(description = "Error timestamp", example = "2021-08-25T15:00:00")
-    private final Date timestamp;
-
+public record ErrorResponse(@Schema(description = "Error message", example = "Error message") @NotBlank String message,
+                            @Schema(description = "Error code: " +
+                                    "1 - General error (HTTP: 500 - Internal Server Error), " +
+                                    "2 - Authentication failed (HTTP: 401 - Unauthorized), " +
+                                    "3 - JWT token expired (HTTP: 401 - Unauthorized), " +
+                                    "10 - Bad request parameters (HTTP: 400 - Bad Request), " +
+                                    "20 - Access denied (HTTP: 403 - Forbidden)",
+                                    example = "2") @NotBlank ErrorCode code,
+                            @Schema(description = "Error code", example = "401") @NotBlank HttpStatus status,
+                            @Schema(description = "Error timestamp", example = "2021-08-25T15:00:00") @NotBlank Date timestamp) {
     public ErrorResponse(final String message,
                          final ErrorCode code,
                          final HttpStatus status,
@@ -43,19 +30,23 @@ public class ErrorResponse {
         return new ErrorResponse(message, code, code.getStatus(), new Date());
     }
 
-    public String getMessage() {
+    @Override
+    public String message() {
         return message;
     }
 
-    public ErrorCode getCode() {
+    @Override
+    public ErrorCode code() {
         return code;
     }
 
-    public HttpStatus getStatus() {
+    @Override
+    public HttpStatus status() {
         return status;
     }
 
-    public Date getTimestamp() {
+    @Override
+    public Date timestamp() {
         return timestamp;
     }
 }

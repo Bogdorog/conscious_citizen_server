@@ -54,8 +54,7 @@ public class FileSystemStorage implements FileStorage {
                         Files.copy(is, target, StandardCopyOption.REPLACE_EXISTING);
                     }
                 }
-                UUID id = UUID.nameUUIDFromBytes(checksum.getBytes());
-                return id;
+                return UUID.nameUUIDFromBytes(checksum.getBytes());
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             } catch (RuntimeException e) {

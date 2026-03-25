@@ -13,8 +13,8 @@ class UserPublicApiImpl implements UserApi {
 
     private final UserService service;
 
-    public Long registerUser(RegisterUserRequest request) {
-        return service.register(request);
+    public void registerUser(RegisterUserRequest request) {
+        service.register(request);
     }
 
     public UserDto getUser(String email) {

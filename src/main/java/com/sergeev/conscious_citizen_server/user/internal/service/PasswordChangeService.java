@@ -17,7 +17,6 @@ public class PasswordChangeService {
 
     public String hashToken(String token) {
         //return DigestUtils.sha256Hex(token);
-        String sha3Hex = new DigestUtils("SHA3-256").digestAsHex(token);
-        return sha3Hex;
+        return new DigestUtils("SHA3-256").digestAsHex(token);
     }
 }

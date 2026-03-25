@@ -94,8 +94,7 @@ public class UserService {
 
         publisher.publishEvent(new UserLoggedInEvent(user.getId()));
 
-        AuthResult auth = new AuthResult(user.getId().toString());
-        return auth;
+        return new AuthResult(user.getId().toString());
     }
 
     @Transactional

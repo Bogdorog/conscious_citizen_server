@@ -25,7 +25,7 @@ public class JwtTokenProvider {
     public static final String JWT_TOKEN_HEADER_PARAM = HEADER;
     public static final String HEADER_PREFIX = "Bearer ";
     private final UserDetailsService userDetailsService;
-    private SecretKey jwtSecret = Keys.secretKeyFor(SignatureAlgorithm.HS512);
+    private final SecretKey jwtSecret = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
     @Value("${security.jwt.tokenExpirationTime}")
     private int tokenExpirationInSec;
