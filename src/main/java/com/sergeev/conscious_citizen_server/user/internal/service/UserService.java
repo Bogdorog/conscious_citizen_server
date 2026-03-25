@@ -30,7 +30,7 @@ import java.time.LocalDateTime;
  */
 @Service
 @RequiredArgsConstructor
-class UserService {
+public class UserService {
     private final UserMapper userMapper;
     private final UserRepository repository;
     private final ApplicationEventPublisher publisher;
@@ -94,8 +94,7 @@ class UserService {
 
         publisher.publishEvent(new UserLoggedInEvent(user.getId()));
 
-        //return user.getId();
-        AuthResult auth = null;
+        AuthResult auth = new AuthResult(user.getId().toString());
         return auth;
     }
 
