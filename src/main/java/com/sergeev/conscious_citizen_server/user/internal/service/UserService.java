@@ -68,21 +68,9 @@ public class UserService {
 
     public AuthResult login(LoginRequest request) {
 
-        ContactIdentifier identifier =
-                ContactIdentifierParser.parse(request.emailOrPhone());
-
-        User user = switch (identifier) {
-
-            case EmailIdentifier email ->
-                    repository.findByEmail(email.value())
+        User user = repository.findByLogin(request.login())
                             .orElseThrow(() ->
                                     new IllegalArgumentException("User not found"));
-
-            case PhoneIdentifier phone ->
-                    repository.findByPhone(phone.value())
-                            .orElseThrow(() ->
-                                    new IllegalArgumentException("User not found"));
-        };
 
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             throw new IllegalArgumentException("Invalid credentials");
@@ -112,8 +100,8 @@ public class UserService {
         return userMapper.toResponse(user);
     }
 
-    public UserDto get(String email) {
-        User user = repository.findByEmail(email)
+    public UserDto get(String login) {
+        User user = repository.findByLogin(login)
                 .orElseThrow();
         return userMapper.toResponse(user);
     }
@@ -173,42 +161,5 @@ public class UserService {
 
         repository.save(user);
         tokenRepository.save(resetToken);
-    }
-
-// Разделение почты и телефона происходит здесь
-    sealed interface ContactIdentifier
-            permits EmailIdentifier, PhoneIdentifier {
-
-        String value();
-    }
-
-    record EmailIdentifier(String value)
-            implements ContactIdentifier {
-
-        public EmailIdentifier {
-            if (!value.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
-                throw new IllegalArgumentException("Invalid email");
-            }
-        }
-    }
-
-    record PhoneIdentifier(String value)
-            implements ContactIdentifier {
-
-        public PhoneIdentifier {
-            if (!value.matches("^\\+?[0-9]{10,15}$")) {
-                throw new IllegalArgumentException("Invalid phone");
-            }
-        }
-    }
-
-    static class ContactIdentifierParser {
-
-        public static ContactIdentifier parse(String value) {
-            if (value.contains("@")) {
-                return new EmailIdentifier(value);
-            }
-            return new PhoneIdentifier(value);
-        }
     }
 }

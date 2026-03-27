@@ -22,7 +22,7 @@ public class UserDetailsImpl implements UserDetails {
 
     public UserDetailsImpl(final User user, final Collection<? extends GrantedAuthority> authorities) {
         this.id = user.getId();
-        this.username = user.getEmail();
+        this.username = user.getLogin();
         this.email = user.getEmail();
         this.password = user.getPasswordHash();
         this.authorities = authorities;

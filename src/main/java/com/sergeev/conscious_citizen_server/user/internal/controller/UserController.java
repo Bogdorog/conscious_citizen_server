@@ -14,12 +14,12 @@ class UserController {
 
     private final UserApi api;
 
-    @GetMapping("/{email}")
-    public Object get(@PathVariable String email) {
-        return api.getUser(email);
+    @GetMapping("/{login}")
+    public Object get(@PathVariable String login) {
+        return api.getUser(login);
     }
 
-    @PostMapping("/{email}")
+    @PostMapping("/{login}")
     public Object update(@RequestBody UpdateProfileRequest request) {
         return api.updateProfile(request);
     }

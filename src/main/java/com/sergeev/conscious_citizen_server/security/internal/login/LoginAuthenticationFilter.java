@@ -51,11 +51,11 @@ public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingF
             throw new AuthenticationServiceException("Invalid login request payload");
         }
 
-        if (StringUtils.isBlank(loginRequest.emailOrPhone()) || StringUtils.isEmpty(loginRequest.password())) {
+        if (StringUtils.isBlank(loginRequest.login()) || StringUtils.isEmpty(loginRequest.password())) {
             throw new AuthenticationServiceException("Username or Password not provided");
         }
 
-        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(loginRequest.emailOrPhone(), loginRequest.password());
+        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(loginRequest.login(), loginRequest.password());
         token.setDetails(authenticationDetailsSource.buildDetails(request));
         return this.getAuthenticationManager().authenticate(token);
     }
