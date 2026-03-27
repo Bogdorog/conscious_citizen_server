@@ -2,7 +2,9 @@ package com.sergeev.conscious_citizen_server;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.modulith.Modulithic;
 
+@Modulithic()
 @SpringBootApplication
 public class ConsciousCitizenServerApplication {
 

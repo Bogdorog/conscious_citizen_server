@@ -55,8 +55,4 @@ public class AuthController {
         userApi.login(request).accessToken();
         return ResponseEntity.ok("");
     }
-//    public ResponseEntity<String> login(@Valid @RequestBody LoginRequest request) {
-//        String jwtToken = userApi.login(request).accessToken();
-//        return ResponseEntity.ok().body("{\"token\": \"" + jwtToken + "\"}");
-//    }
 }
