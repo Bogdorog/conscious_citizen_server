@@ -24,4 +24,9 @@ public class IncidentPublicApiImpl implements IncidentApi {
     public List<IncidentShortResponse> getAllIncidents() {
         return incidentService.getAll();
     }
+
+    @Override
+    public IncidentResponse getIncidentById(Long id) {
+        return incidentService.getById(id);
+    }
 }

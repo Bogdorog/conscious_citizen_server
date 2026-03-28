@@ -3,6 +3,9 @@ package com.sergeev.conscious_citizen_server.incident.api.dto.request;
 public record IncidentRequest(
         String title,
         String description,
+        String type,
+        String address,
         double latitude,
-        double longitude
+        double longitude,
+        boolean active
 ) {}

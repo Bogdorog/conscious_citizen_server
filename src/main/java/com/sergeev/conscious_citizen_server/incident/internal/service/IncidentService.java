@@ -6,6 +6,7 @@ import com.sergeev.conscious_citizen_server.incident.api.dto.request.IncidentReq
 import com.sergeev.conscious_citizen_server.incident.internal.entity.Incident;
 import com.sergeev.conscious_citizen_server.incident.internal.mapper.IncidentMapper;
 import com.sergeev.conscious_citizen_server.incident.internal.repository.IncidentRepository;
+import com.sergeev.conscious_citizen_server.incident.internal.repository.IncidentTypeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,7 @@ public class IncidentService {
     private final IncidentRepository repository;
     private final NominatimService nominatimService;
     private final IncidentMapper mapper;
+    private final IncidentTypeRepository typeRepository;
 
     //@Cacheable(value = "incident-map")
     public List<IncidentShortResponse> getAll() {
@@ -46,14 +48,18 @@ public class IncidentService {
         incident.setMessage(request.description());
         incident.setLatitude(request.latitude());
         incident.setLongitude(request.longitude());
-
-        String address = nominatimService.reverse(
-                request.latitude(),
-                request.longitude()
-        );
-
-        incident.setAddress(address);
+        if (request.address().isBlank())
+        {
+            String address = nominatimService.reverse(
+                    request.latitude(),
+                    request.longitude()
+            );
+            incident.setAddress(address);
+        }
+        else incident.setAddress(request.address());
+        incident.setType(typeRepository.findByName(request.type()));
         incident.setUserId(userId);
+        incident.setActive(request.active());
 
         Incident saved = repository.save(incident);
 

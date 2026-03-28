@@ -1,0 +1,2 @@
+INSERT INTO incident_types VALUES (1, 'PARKING'), (2, 'FOOD_EXPIRED')
+ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;

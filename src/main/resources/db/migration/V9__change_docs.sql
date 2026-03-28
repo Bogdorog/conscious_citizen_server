@@ -1,0 +1,2 @@
+ALTER TABLE incidents
+    ALTER COLUMN file_path DROP NOT NULL;

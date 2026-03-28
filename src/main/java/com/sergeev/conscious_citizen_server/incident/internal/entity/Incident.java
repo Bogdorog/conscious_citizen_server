@@ -39,4 +39,7 @@ public class Incident {
     @Column(nullable = false)
     private Long userId;
 
+    @Column(nullable = false)
+    private boolean active;
+
 }

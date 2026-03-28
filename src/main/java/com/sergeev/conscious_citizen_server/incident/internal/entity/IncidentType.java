@@ -18,5 +18,5 @@ public class IncidentType {
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String name; // PARKING, FOOD
+    private String name; // PARKING, FOOD_EXPIRED
 }

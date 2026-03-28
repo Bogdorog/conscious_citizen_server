@@ -10,4 +10,6 @@ public interface IncidentApi {
     IncidentResponse createIncident(IncidentRequest request, Long userId);
 
     List<IncidentShortResponse> getAllIncidents();
+
+    IncidentResponse getIncidentById(Long id);
 }

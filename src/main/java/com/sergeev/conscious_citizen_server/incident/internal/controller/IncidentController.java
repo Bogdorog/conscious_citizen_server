@@ -29,4 +29,9 @@ public class IncidentController {
         return incidentApi.getAllIncidents();
     }
 
+    @GetMapping("/{id}")
+    public IncidentResponse get(@PathVariable Long id) {
+        return incidentApi.getIncidentById(id);
+    }
+
 }
