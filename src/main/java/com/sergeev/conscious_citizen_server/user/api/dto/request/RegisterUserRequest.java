@@ -7,10 +7,13 @@ import jakarta.validation.constraints.Size;
 
 @Schema(description = "Запрос на регистрацию нового пользователя")
 public record RegisterUserRequest(
+        @NotBlank(message = "Логин не может быть пустым")
+        @Schema(description = "Логин пользователя", example = "user123")
+        String login,
+
         @NotBlank(message = "ФИО не может быть пустым")
         @Schema(description = "Полное имя пользователя", example = "Сидоров Иван Сергеевич")
         String fullName,
-
 
         @NotBlank(message = "Телефон не может быть пустым")
         @Schema(description = "Телефон пользователя", example = "898712356")

@@ -17,9 +17,11 @@ class UserPublicApiImpl implements UserApi {
         service.register(request);
     }
 
-    public UserDto getUser(String email) {
-        return service.get(email);
+    public UserDto getUser(String login) {
+        return service.get(login);
     }
+
+    public String getRole(String login) {return service.getRole(login);}
 
     public AuthResult login(LoginRequest request) {
         return service.login(request);

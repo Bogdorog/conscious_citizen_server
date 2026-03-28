@@ -51,6 +51,7 @@ public class UserService {
 
         User user = repository.save(
                 User.builder()
+                        .login(request.login())
                         .fullName(request.fullName())
                         .email(request.email())
                         .phone(request.phone())
@@ -105,6 +106,13 @@ public class UserService {
                 .orElseThrow();
         return userMapper.toResponse(user);
     }
+
+    public String getRole(String login) {
+        User user = repository.findByLogin(login)
+                .orElseThrow();
+        return user.getRole().getName();
+    }
+
     // Первый запрос о смене пароля
     @Transactional
     public void initiatePasswordReset(PasswordResetRequest request) {

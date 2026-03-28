@@ -19,6 +19,11 @@ class UserController {
         return api.getUser(login);
     }
 
+    @GetMapping("/{login}/role")
+    public String getRole(@PathVariable String login) {
+        return api.getRole(login);
+    }
+
     @PostMapping("/{login}")
     public Object update(@RequestBody UpdateProfileRequest request) {
         return api.updateProfile(request);

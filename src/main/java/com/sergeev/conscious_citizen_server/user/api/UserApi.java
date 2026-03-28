@@ -16,5 +16,7 @@ public interface UserApi {
 
     UserDto updateProfile(UpdateProfileRequest request);
 
-    UserDto getUser(String email);
+    UserDto getUser(String login);
+
+    String getRole(String login);
 }

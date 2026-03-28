@@ -7,12 +7,13 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
-    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "login", source = "username")
     @Mapping(target = "passwordHash", ignore = true)
-    @Mapping(target = "role", ignore = true)
     @Mapping(target = "active", ignore = true)
+    @Mapping(target = "role", source = "role", ignore = true)
     User toEntity(UserDto dto);
 
-    //@Mapping(target = "roles", expression = "java(user.getRole().getName())")
+    @Mapping(target = "role", expression = "java(user.getRole().getName())")
+    @Mapping(target = "username", source = "login")
     UserDto toResponse(User user);
 }
