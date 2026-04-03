@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -68,6 +69,7 @@ public class IncidentService {
         incident.setType(typeRepository.findByName(request.type()));
         incident.setUserId(userId);
         incident.setActive(request.active());
+        incident.setCreatedAt(LocalDateTime.now());
 
         Incident saved = repository.save(incident);
 
