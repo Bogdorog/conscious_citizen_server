@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.util.Date;
 
@@ -45,9 +46,11 @@ public class Incident {
     private String filePath;
 
     @Column(nullable = false)
+    @ColumnDefault("true")
     private boolean active;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false)
+    @ColumnDefault("CURRENT_TIMESTAMP")
     private Date createdAt;
 
 }

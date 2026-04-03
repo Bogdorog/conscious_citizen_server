@@ -21,8 +21,9 @@ public class DocumentService {
         Incident incident = incidentRepository.findById(incidentId)
                 .orElseThrow();
 
-        // 1. грузим шаблон
-        String template = documentTemplateService.loadTemplate("incident");
+        String templateName = resolveTemplateName(incident);
+
+        String template = documentTemplateService.loadTemplate(templateName);
 
         // 2. подставляем данные
         Map<String, String> vars = Map.of(
@@ -56,5 +57,9 @@ public class DocumentService {
         }
 
         return storageService.read(incident.getFilePath());
+    }
+
+    private String resolveTemplateName(Incident incident) {
+        return "incident_type_" + incident.getType().getName();
     }
 }

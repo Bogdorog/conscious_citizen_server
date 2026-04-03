@@ -35,6 +35,17 @@ public class DocumentController {
                 .body(file);
     }
 
+    @GetMapping("/{id}/document/view")
+    public ResponseEntity<byte[]> view(@PathVariable Long id) {
+
+        byte[] file = documentService.download(id);
+
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "inline; filename=document.pdf")
+                .header("Content-Type", "application/pdf")
+                .body(file);
+    }
+
     @PostMapping("/{id}/document/send")
     public void send(@PathVariable Long id) {
 
