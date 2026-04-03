@@ -1,6 +1,6 @@
 package com.sergeev.conscious_citizen_server.incident.api.dto;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 public record IncidentShortResponse(
         Long id,
@@ -8,5 +8,5 @@ public record IncidentShortResponse(
         String type,
         double latitude,
         double longitude,
-        Date created
+        LocalDateTime created
 ) {}

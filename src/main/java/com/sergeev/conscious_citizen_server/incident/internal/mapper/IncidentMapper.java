@@ -12,5 +12,6 @@ public interface IncidentMapper {
     @Mapping(target = "type", expression = "java(incident.getType().getName())")
     IncidentResponse toDto(Incident incident);
     @Mapping(target = "type", expression = "java(incident.getType().getName())")
+    @Mapping(target = "created", source = "createdAt")
     IncidentShortResponse toShortDto(Incident incident);
 }

@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.tower'
-version = '0.0.5-SNAPSHOT'
+version = '0.0.9-SNAPSHOT'
 description = 'conscious_citizen_server'
 
 java {
