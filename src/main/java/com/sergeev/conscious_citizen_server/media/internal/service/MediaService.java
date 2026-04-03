@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -118,6 +119,14 @@ public class MediaService implements MediaApi{
 
     public String buildDownloadUrl(UUID id) {
         return downloadBase + "/" + id + "/download";
+    }
+
+    public List<MediaAssetDto> findByIncidentId(Long incidentId)
+    {
+        return mediaRepo.findByIncidentId(incidentId)
+                .stream()
+                .map(mediaMapper::toResponse)
+                .toList();
     }
 
 }

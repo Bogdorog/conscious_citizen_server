@@ -69,6 +69,7 @@ public class IncidentService {
         incident.setType(typeRepository.findByName(request.type()));
         incident.setUserId(userId);
         incident.setActive(request.active());
+
         incident.setCreatedAt(LocalDateTime.now());
 
         Incident saved = repository.save(incident);
