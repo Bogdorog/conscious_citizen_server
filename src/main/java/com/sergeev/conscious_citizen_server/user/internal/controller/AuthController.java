@@ -35,7 +35,7 @@ public class AuthController {
             responseCode = "500",
             description = "Ошибка на сервере."
     )
-    public ResponseEntity<?> studentRegister(@Valid @RequestBody RegisterUserRequest request) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterUserRequest request) {
         userApi.registerUser(request);
         return ResponseEntity.ok("Пользователь успешно зарегистрирован.");
     }

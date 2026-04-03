@@ -18,7 +18,8 @@ class ModulithStructureTest {
 
     @Test
     void createModuleDocumentation() {
-        ApplicationModules modules = ApplicationModules.of(ConsciousCitizenServerApplication.class);
+        ApplicationModules modules = ApplicationModules.of(ConsciousCitizenServerApplication.class,
+                JavaClass.Predicates.resideInAPackage("..api.."));
         new Documenter(modules)
                 .writeDocumentation()
                 .writeIndividualModulesAsPlantUml();

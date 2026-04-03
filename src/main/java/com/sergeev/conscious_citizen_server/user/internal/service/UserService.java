@@ -125,7 +125,7 @@ public class UserService {
     @Transactional
     public void initiatePasswordReset(PasswordResetRequest request) {
 
-        User user = repository.findByEmail(request.emailOrPhone())
+        User user = repository.findByLogin(request.login())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         String rawToken = passwordChangeService.generateToken();

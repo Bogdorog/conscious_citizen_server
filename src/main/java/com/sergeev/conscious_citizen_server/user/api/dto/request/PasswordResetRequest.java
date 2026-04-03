@@ -9,5 +9,5 @@ public record PasswordResetRequest(
         @Email(message = "Некорректный формат email")
         @NotBlank(message = "Email не может быть пустым")
         @Schema(description = "Адрес электронной почты пользователя", example = "user@mail.com")
-        String emailOrPhone
+        String login
 ) {}
