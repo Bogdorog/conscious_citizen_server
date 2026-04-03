@@ -18,5 +18,7 @@ public interface UserApi {
 
     UserDto getUser(String login);
 
+    UserDto getUserById(Long id);
+
     String getRole(String login);
 }

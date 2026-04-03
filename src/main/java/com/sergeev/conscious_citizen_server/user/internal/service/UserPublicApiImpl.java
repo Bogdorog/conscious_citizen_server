@@ -21,6 +21,8 @@ class UserPublicApiImpl implements UserApi {
         return service.get(login);
     }
 
+    public UserDto getUserById(Long id) { return service.getById(id); }
+
     public String getRole(String login) {return service.getRole(login);}
 
     public AuthResult login(LoginRequest request) {

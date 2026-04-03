@@ -39,6 +39,9 @@ public class Incident {
     @Column(nullable = false)
     private Long userId;
 
+    @Column(name="file_path", nullable = false)
+    private String filePath;
+
     @Column(nullable = false)
     private boolean active;
 

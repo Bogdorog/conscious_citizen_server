@@ -6,6 +6,10 @@ import jakarta.validation.constraints.NotBlank;
 
 @Schema(description = "Запрос на изменение профиля пользователя")
 public record UpdateProfileRequest(
+        @NotBlank(message = "Логин не может быть пустым")
+        @Schema(description = "Логин пользователя", example = "user123")
+        String login,
+
         @NotBlank(message = "ФИО не может быть пустым")
         @Schema(description = "Полное имя пользователя", example = "Сидоров Иван Сергеевич")
         String fullName,

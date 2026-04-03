@@ -89,9 +89,11 @@ public class UserService {
     @Transactional
     public UserDto updateProfile(UpdateProfileRequest request) {
 
-        User user = repository.findByEmail(request.email())
-                .orElseThrow();
+        User user = repository.findByLogin(request.login())
+                .orElseThrow(() ->
+                        new IllegalArgumentException("User not found"));
 
+        user.setEmail(request.email());
         user.setFullName(request.fullName());
         user.setPhone(request.phone());
         user.setAddress(request.address());
@@ -103,6 +105,12 @@ public class UserService {
 
     public UserDto get(String login) {
         User user = repository.findByLogin(login)
+                .orElseThrow();
+        return userMapper.toResponse(user);
+    }
+
+    public UserDto getById(Long id) {
+        User user = repository.findById(id)
                 .orElseThrow();
         return userMapper.toResponse(user);
     }
