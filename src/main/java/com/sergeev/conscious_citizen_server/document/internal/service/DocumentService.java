@@ -12,7 +12,7 @@ import java.util.Map;
 public class DocumentService {
 
     private final IncidentRepository incidentRepository;
-    private final TemplateService templateService;
+    private final DocumentTemplateService documentTemplateService;
     private final PdfGeneratorService pdfGenerator;
     private final FileStorageService storageService;
 
@@ -22,7 +22,7 @@ public class DocumentService {
                 .orElseThrow();
 
         // 1. грузим шаблон
-        String template = templateService.loadTemplate("incident");
+        String template = documentTemplateService.loadTemplate("incident");
 
         // 2. подставляем данные
         Map<String, String> vars = Map.of(
@@ -31,7 +31,7 @@ public class DocumentService {
                 "address", incident.getAddress()
         );
 
-        String html = templateService.fillTemplate(template, vars);
+        String html = documentTemplateService.fillTemplate(template, vars);
 
         // 3. генерим PDF
         byte[] pdf = pdfGenerator.generate(html);

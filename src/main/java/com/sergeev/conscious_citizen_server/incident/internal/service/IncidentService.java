@@ -25,13 +25,20 @@ public class IncidentService {
     @Cacheable(value = "incident-map")
     public List<IncidentShortResponse> getAll() {
 
-        return repository.findAll()
+        return repository.findAllByActiveTrue()
                 .stream()
                 .map(mapper::toShortDto)
                 .toList();
     }
 
-    // 📌 ДЕТАЛЬНЫЙ ИНЦИДЕНТ
+    public List<IncidentResponse> getAllDrafts(Long userId) {
+
+        return repository.findAllByActiveFalseAndUserId(userId)
+                .stream()
+                .map(mapper::toDto)
+                .toList();
+    }
+
     @Cacheable(value = "incident-details", key = "#id")
     public IncidentResponse getById(Long id) {
 

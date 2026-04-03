@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 import java.util.Map;
 
 @Service
-public class TemplateService {
+public class DocumentTemplateService {
 
     @Value("${app.storage.templates-path}")
     private String templatesPath;

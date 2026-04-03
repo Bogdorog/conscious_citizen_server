@@ -29,6 +29,11 @@ public class IncidentController {
         return incidentApi.getAllIncidents();
     }
 
+    @GetMapping("/drafts")
+    public List<IncidentResponse> getAllDrafts(@RequestHeader("X-User-Id") Long userId) {
+        return incidentApi.getAllDrafts(userId);
+    }
+
     @GetMapping("/{id}")
     public IncidentResponse get(@PathVariable Long id) {
         return incidentApi.getIncidentById(id);

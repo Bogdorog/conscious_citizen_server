@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 public class PasswordResetListener {
 
     private final EmailNotificationApi emailApi;
-    private final TemplateService templateService;
+    private final EmailTemplateService emailTemplateService;
     @Value("${server.port}")
     private int PORT;
 
@@ -22,7 +22,7 @@ public class PasswordResetListener {
 
         String link = "http://localhost:" + PORT + "/reset?token=" + event.token();
 
-        String html = templateService.buildResetPasswordEmail(link);
+        String html = emailTemplateService.buildResetPasswordEmail(link);
 
         emailApi.sendEmail(
                 new SendEmailRequest(

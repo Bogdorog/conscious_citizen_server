@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Date;
+
 @Entity
 @Table(name = "incidents")
 @Getter
@@ -44,5 +46,8 @@ public class Incident {
 
     @Column(nullable = false)
     private boolean active;
+
+    @Column(name = "created_at")
+    private Date createdAt;
 
 }

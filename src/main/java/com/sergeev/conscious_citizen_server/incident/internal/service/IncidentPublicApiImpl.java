@@ -26,6 +26,11 @@ public class IncidentPublicApiImpl implements IncidentApi {
     }
 
     @Override
+    public List<IncidentResponse> getAllDrafts(Long userId) {
+        return incidentService.getAllDrafts(userId);
+    }
+
+    @Override
     public IncidentResponse getIncidentById(Long id) {
         return incidentService.getById(id);
     }

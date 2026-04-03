@@ -3,7 +3,7 @@ package com.sergeev.conscious_citizen_server.notification.internal.service;
 import org.springframework.stereotype.Service;
 
 @Service
-public class TemplateService {
+public class EmailTemplateService {
 
     public String buildResetPasswordEmail(String link) {
         return """
