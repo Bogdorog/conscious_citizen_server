@@ -19,7 +19,7 @@ public class IncidentMediaService {
 
     public CompletableFuture<MediaAssetDto> uploadPhoto(Long incidentId,
                                                         MultipartFile file,
-                                                        Long userId) {
+                                                        Long userId) throws Exception{
 
         Incident incident = incidentRepository.findById(incidentId)
                 .orElseThrow(() -> new RuntimeException("Incident not found"));

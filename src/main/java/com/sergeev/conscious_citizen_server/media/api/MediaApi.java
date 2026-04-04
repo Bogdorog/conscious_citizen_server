@@ -9,7 +9,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public interface MediaApi {
-    CompletableFuture<MediaAssetDto> upload(MultipartFile file, Long ownerId, Long courseId);
+    CompletableFuture<MediaAssetDto> upload(MultipartFile file, Long ownerId, Long incidentId) throws Exception;
     MediaAssetDto getMeta(UUID id);
     InputStream download(UUID id) throws Exception;
     void delete(UUID id) throws Exception;

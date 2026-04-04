@@ -8,5 +8,6 @@ public record IncidentShortResponse(
         String type,
         double latitude,
         double longitude,
+        Long userId,
         LocalDateTime created
 ) {}

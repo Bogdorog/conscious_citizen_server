@@ -6,24 +6,20 @@ import com.sergeev.conscious_citizen_server.media.api.dto.MediaAssetDto;
 import com.sergeev.conscious_citizen_server.media.internal.mapper.MediaMapper;
 import com.sergeev.conscious_citizen_server.media.internal.model.MediaAsset;
 import com.sergeev.conscious_citizen_server.media.internal.repository.MediaAssetRepository;
-import jakarta.transaction.Transactional;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -34,98 +30,84 @@ public class MediaService implements MediaApi{
     private final MediaAssetRepository mediaRepo;
     private final String downloadBase;
     private final MediaMapper mediaMapper;
+    private final TransactionTemplate tx;
+    private final Path storageRoot;
 
-    public MediaService(@Qualifier("resilientFileStorage") FileStorage fileStorage,
-                        MediaAssetRepository mediaRepo,
-                        @Value("${app.media.download-base:/api/media}") String downloadBase, MediaMapper mediaMapper) {
-        this.fileStorage = fileStorage;
-        this.mediaRepo = mediaRepo;
-        this.downloadBase = downloadBase;
-        this.mediaMapper = mediaMapper;
+    public MediaService(
+            @Qualifier("resilientFileStorage") FileStorage fileStorage,
+            MediaAssetRepository mediaRepo,
+            @Value("${app.media.download-base:/api/media}") String downloadBase,
+            MediaMapper mediaMapper,
+            TransactionTemplate tx,
+            FileSystemStorage fileSystemStorage
+    ) {
+        this.fileStorage   = fileStorage;
+        this.mediaRepo     = mediaRepo;
+        this.downloadBase  = downloadBase;
+        this.mediaMapper   = mediaMapper;
+        this.tx            = tx;
+        this.storageRoot   = fileSystemStorage.getStorageRoot();
     }
 
     @Override
-    @Transactional
-    public CompletableFuture<MediaAssetDto> upload(MultipartFile file, Long ownerId, Long incidentId) {
-        try {
-            return fileStorage.save(file)
-                    .thenApply(id -> {
-                        try {
-                            String checksum;
-                            try (InputStream is = file.getInputStream()) {
-                                checksum = DigestUtils.sha256Hex(is);
-                            }
-
-                            String dir1 = checksum.substring(0, 2);
-                            String dir2 = checksum.substring(2, 4);
-                            String baseName = checksum;
-                            String ext = FilenameUtils.getExtension(file.getOriginalFilename());
-                            String fileName = baseName + (ext != null && !ext.isBlank() ? "." + ext : "");
-                            String filePath = Paths.get(dir1, dir2, baseName, fileName).toString();
-
-                            Optional<MediaAsset> existing = mediaRepo.findById(id);
-                            if (existing.isPresent()) {
-                                return mediaMapper.toResponse(existing.get());
-                            }
-
-                            MediaAsset asset = new MediaAsset();
-                            asset.setId(id);
-                            asset.setOwnerId(ownerId);
-                            asset.setIncidentId(incidentId);
-                            asset.setFileName(file.getOriginalFilename());
-                            asset.setFilePath(filePath);
-
-                            mediaRepo.save(asset);
-
-                            String downloadUrl = downloadBase + "/" + id + "/download";
-                            return mediaMapper.toResponse(asset, downloadUrl);
-                        } catch (IOException e) {
-                            throw new UncheckedIOException(e);
-                        }
-                    });
-        } catch (Exception e) {
-            CompletableFuture<MediaAssetDto> failed = new CompletableFuture<>();
-            failed.completeExceptionally(e);
-            return failed;
-        }
+    public CompletableFuture<MediaAssetDto> upload(MultipartFile file, Long ownerId, Long incidentId) throws Exception {
+        return fileStorage.save(file)
+                .thenApply(result -> tx.execute(status -> {
+                    // Дубликат? — возвращаем существующий
+                    return mediaRepo.findById(result.id())
+                            .map(existing -> mediaMapper.toResponse(existing, buildDownloadUrl(existing.getId())))
+                            .orElseGet(() -> {
+                                MediaAsset asset = new MediaAsset();
+                                asset.setId(result.id());
+                                asset.setOwnerId(ownerId);
+                                asset.setIncidentId(incidentId);
+                                asset.setFileName(file.getOriginalFilename());
+                                asset.setFilePath(result.filePath()); // путь из storage, без пересчёта
+                                mediaRepo.save(asset);
+                                return mediaMapper.toResponse(asset, buildDownloadUrl(asset.getId()));
+                            });
+                }));
     }
 
     @Override
     public MediaAssetDto getMeta(UUID id) {
-        MediaAsset a = mediaRepo.findById(id).orElseThrow(() -> new RuntimeException("Not found"));
-        String url = downloadBase + "/" + id + "/download";
-        return mediaMapper.toResponse(a, url);
+        MediaAsset a = mediaRepo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Медиафайл не найден"));
+        return mediaMapper.toResponse(a, buildDownloadUrl(id));
     }
 
     @Override
-    public InputStream download(UUID id) throws Exception {
-        MediaAsset a = mediaRepo.findById(id).orElseThrow(() -> new RuntimeException("Not found"));
-        // build actual absolute path from storage root + filePath
-        Path root = Paths.get(System.getProperty("user.dir")).resolve("media_storage").toAbsolutePath();
-        Path path = root.resolve(a.getFilePath());
-        if (!Files.exists(path)) throw new FileNotFoundException("File not found on disk");
+    public InputStream download(UUID id) throws IOException {
+        MediaAsset a = mediaRepo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Медиафайл не найден"));
+
+        // Используем тот же storageRoot, что и FileSystemStorage — никаких user.dir
+        Path path = storageRoot.resolve(a.getFilePath()).normalize();
+        if (!Files.exists(path))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Файл отсутствует на диске");
+
         return Files.newInputStream(path, StandardOpenOption.READ);
     }
 
-    @Override
-    @Transactional
+        @Override
     public void delete(UUID id) throws Exception {
-        MediaAsset a = mediaRepo.findById(id).orElseThrow(() -> new RuntimeException("Not found"));
-        Path root = Paths.get(System.getProperty("user.dir")).resolve("media_storage").toAbsolutePath();
-        Path path = root.resolve(a.getFilePath());
-        fileStorage.delete(path.toString());
-        mediaRepo.deleteById(id);
+        MediaAsset a = mediaRepo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Медиафайл не найден"));
+
+        // Транзакция: сначала удаляем из БД, потом с диска
+        tx.executeWithoutResult(status -> mediaRepo.deleteById(id));
+        fileStorage.delete(a.getFilePath()); // async, ошибка диска не откатит БД — приемлемо
     }
 
     public String buildDownloadUrl(UUID id) {
         return downloadBase + "/" + id + "/download";
     }
 
-    public List<MediaAssetDto> findByIncidentId(Long incidentId)
-    {
+    @Override
+    public List<MediaAssetDto> findByIncidentId(Long incidentId) {
         return mediaRepo.findByIncidentId(incidentId)
                 .stream()
-                .map(mediaMapper::toResponse)
+                .map(a -> mediaMapper.toResponse(a, buildDownloadUrl(a.getId())))
                 .toList();
     }
 

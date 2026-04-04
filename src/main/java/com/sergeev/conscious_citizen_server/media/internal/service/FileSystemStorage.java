@@ -1,6 +1,7 @@
 package com.sergeev.conscious_citizen_server.media.internal.service;
 
 import com.sergeev.conscious_citizen_server.media.api.FileStorage;
+import com.sergeev.conscious_citizen_server.media.api.dto.StorageSaveResult;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,8 +31,12 @@ public class FileSystemStorage implements FileStorage {
         Files.createDirectories(this.storageRoot);
     }
 
+    public Path getStorageRoot() {
+        return storageRoot;
+    }
+
     @Override
-    public CompletableFuture<UUID> save(MultipartFile file) {
+    public CompletableFuture<StorageSaveResult> save(MultipartFile file) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 validateFile(file);
@@ -45,6 +50,8 @@ public class FileSystemStorage implements FileStorage {
                 String ext = FilenameUtils.getExtension(file.getOriginalFilename());
                 String baseName = checksum;
                 String fileName = baseName + (ext != null && !ext.isBlank() ? "." + ext : "");
+                // Относительный путь для хранения в БД
+                String relPath  = Paths.get(dir1, dir2, baseName, fileName).toString();
                 Path targetDir = storageRoot.resolve(dir1).resolve(dir2).resolve(baseName);
                 Files.createDirectories(targetDir);
                 Path target = targetDir.resolve(fileName);
@@ -54,11 +61,12 @@ public class FileSystemStorage implements FileStorage {
                         Files.copy(is, target, StandardCopyOption.REPLACE_EXISTING);
                     }
                 }
-                return UUID.nameUUIDFromBytes(checksum.getBytes());
+                UUID id = UUID.nameUUIDFromBytes(checksum.getBytes());
+                // Возвращаем всё сразу — сервис больше ничего не пересчитывает
+                return new StorageSaveResult(id, checksum, relPath);
+
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
-            } catch (RuntimeException e) {
-                throw e;
             }
         }, ioExecutor);
     }

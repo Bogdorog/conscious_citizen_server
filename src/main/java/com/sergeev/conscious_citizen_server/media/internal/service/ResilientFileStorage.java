@@ -1,6 +1,7 @@
 package com.sergeev.conscious_citizen_server.media.internal.service;
 
 import com.sergeev.conscious_citizen_server.media.api.FileStorage;
+import com.sergeev.conscious_citizen_server.media.api.dto.StorageSaveResult;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
@@ -8,7 +9,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Component("resilientFileStorage")
@@ -24,7 +24,7 @@ public class ResilientFileStorage implements FileStorage {
     @TimeLimiter(name = "fileStorageTimeLimiter")
     @Retry(name = "fileStorageRetry")
     @CircuitBreaker(name = "fileStorageCircuitBreaker")
-    public CompletableFuture<UUID> save(MultipartFile file) {
+    public CompletableFuture<StorageSaveResult> save(MultipartFile file) {
         return delegate.save(file);
     }
 

@@ -23,7 +23,7 @@ public class IncidentPhotoController {
             @PathVariable Long incidentId,
             @RequestParam("file") MultipartFile file,
             @RequestHeader("X-User-Id") Long userId
-    ) {
+    ) throws Exception {
         return service.uploadPhoto(incidentId, file, userId);
     }
 
