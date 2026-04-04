@@ -1,5 +1,6 @@
 package com.sergeev.conscious_citizen_server.incident.internal.mapper;
 
+import com.sergeev.conscious_citizen_server.incident.api.dto.IncidentAdminResponse;
 import com.sergeev.conscious_citizen_server.incident.api.dto.IncidentResponse;
 import com.sergeev.conscious_citizen_server.incident.api.dto.IncidentShortResponse;
 import com.sergeev.conscious_citizen_server.incident.internal.entity.Incident;
@@ -14,4 +15,5 @@ public interface IncidentMapper {
     @Mapping(target = "type", expression = "java(incident.getType().getName())")
     @Mapping(target = "created", source = "createdAt")
     IncidentShortResponse toShortDto(Incident incident);
+    IncidentAdminResponse toAdminDto(Incident incident);
 }

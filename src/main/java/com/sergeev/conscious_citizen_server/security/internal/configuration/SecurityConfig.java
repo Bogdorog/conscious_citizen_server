@@ -83,6 +83,7 @@ public class SecurityConfig {
                         .requestMatchers(SWAGGER_ENTRY_POINT).permitAll()
                         .requestMatchers(API_DOCS_ENTRY_POINT).permitAll()
                         .requestMatchers(TOKEN_REFRESH_ENTRY_POINT).permitAll()
+                        .requestMatchers("/api/incidents/admin").hasRole("ROLE_ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(buildTokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)

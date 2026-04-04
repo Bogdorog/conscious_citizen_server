@@ -1,6 +1,7 @@
 package com.sergeev.conscious_citizen_server.incident.internal.service;
 
 import com.sergeev.conscious_citizen_server.incident.api.IncidentApi;
+import com.sergeev.conscious_citizen_server.incident.api.dto.IncidentAdminResponse;
 import com.sergeev.conscious_citizen_server.incident.api.dto.IncidentResponse;
 import com.sergeev.conscious_citizen_server.incident.api.dto.IncidentShortResponse;
 import com.sergeev.conscious_citizen_server.incident.api.dto.request.IncidentRequest;
@@ -23,6 +24,11 @@ public class IncidentPublicApiImpl implements IncidentApi {
     @Override
     public List<IncidentShortResponse> getAllIncidents() {
         return incidentService.getAll();
+    }
+
+    @Override
+    public List<IncidentAdminResponse> getAllAdminIncidents() {
+        return incidentService.getAllAdmin();
     }
 
     @Override

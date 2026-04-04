@@ -1,5 +1,6 @@
 package com.sergeev.conscious_citizen_server.incident.internal.service;
 
+import com.sergeev.conscious_citizen_server.incident.api.dto.IncidentAdminResponse;
 import com.sergeev.conscious_citizen_server.incident.api.dto.IncidentResponse;
 import com.sergeev.conscious_citizen_server.incident.api.dto.IncidentShortResponse;
 import com.sergeev.conscious_citizen_server.incident.api.dto.request.IncidentRequest;
@@ -28,6 +29,14 @@ public class IncidentService {
         return repository.findAllByActiveTrue()
                 .stream()
                 .map(mapper::toShortDto)
+                .toList();
+    }
+
+    public List<IncidentAdminResponse> getAllAdmin() {
+
+        return repository.findAllByActiveTrue()
+                .stream()
+                .map(mapper::toAdminDto)
                 .toList();
     }
 

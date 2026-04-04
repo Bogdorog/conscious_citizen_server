@@ -1,6 +1,7 @@
 package com.sergeev.conscious_citizen_server.incident.internal.controller;
 
 import com.sergeev.conscious_citizen_server.incident.api.IncidentApi;
+import com.sergeev.conscious_citizen_server.incident.api.dto.IncidentAdminResponse;
 import com.sergeev.conscious_citizen_server.incident.api.dto.IncidentResponse;
 import com.sergeev.conscious_citizen_server.incident.api.dto.IncidentShortResponse;
 import com.sergeev.conscious_citizen_server.incident.api.dto.request.IncidentRequest;
@@ -37,6 +38,11 @@ public class IncidentController {
     @GetMapping("/{id}")
     public IncidentResponse get(@PathVariable Long id) {
         return incidentApi.getIncidentById(id);
+    }
+
+    @GetMapping("/admin")
+    public List<IncidentAdminResponse> getAllAdmin() {
+        return incidentApi.getAllAdminIncidents();
     }
 
 }
