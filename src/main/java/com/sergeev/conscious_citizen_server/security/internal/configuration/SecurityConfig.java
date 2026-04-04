@@ -34,6 +34,8 @@ public class SecurityConfig {
     public static final String SIGNIN_ENTRY_POINT = "/auth/login";
     public static final String SIGNUP_ENTRY_POINT = "/auth/register";
     public static final String SWAGGER_ENTRY_POINT = "/swagger-ui/**";
+    public static final String FORGOT_PASSWORD_POINT = "/user/password/reset/request";
+    public static final String RESET_PASSWORD_POINT = "/user/password/reset/confirm";
     public static final String API_DOCS_ENTRY_POINT = "/api-docs/**";
     public static final String TOKEN_REFRESH_ENTRY_POINT = "/auth/refreshToken";
     private final JwtTokenProvider jwtTokenProvider;
@@ -83,6 +85,8 @@ public class SecurityConfig {
                         .requestMatchers(SWAGGER_ENTRY_POINT).permitAll()
                         .requestMatchers(API_DOCS_ENTRY_POINT).permitAll()
                         .requestMatchers(TOKEN_REFRESH_ENTRY_POINT).permitAll()
+                        .requestMatchers(FORGOT_PASSWORD_POINT).permitAll()
+                        .requestMatchers(RESET_PASSWORD_POINT).permitAll()
                         .requestMatchers("/api/incidents/admin").hasRole("ADMIN")
                         .requestMatchers("/api/incidents/{incidentId}/photos").permitAll()
                         .anyRequest().authenticated()

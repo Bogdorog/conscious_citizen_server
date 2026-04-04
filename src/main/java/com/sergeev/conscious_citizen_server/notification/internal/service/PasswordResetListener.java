@@ -14,20 +14,20 @@ public class PasswordResetListener {
 
     private final EmailNotificationApi emailApi;
     private final EmailTemplateService emailTemplateService;
-    @Value("${server.port}")
-    private int PORT;
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
 
     @ApplicationModuleListener
     public void handle(PasswordResetRequestedEvent event) {
 
-        String link = "http://localhost:" + PORT + "/reset?token=" + event.token();
+        String link = frontendUrl + "/reset-password?token=" + event.token();
 
         String html = emailTemplateService.buildResetPasswordEmail(link);
 
         emailApi.sendEmail(
                 new SendEmailRequest(
                         event.email(),
-                        "Reset password",
+                        "Сброс пароля",
                         html
                 )
         );

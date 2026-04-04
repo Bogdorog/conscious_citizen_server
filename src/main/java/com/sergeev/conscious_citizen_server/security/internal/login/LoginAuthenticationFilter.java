@@ -48,7 +48,7 @@ public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingF
         try {
             loginRequest = JsonUtils.fromReader(request.getReader(), LoginRequest.class);
         } catch (Exception e) {
-            throw new AuthenticationServiceException("Invalid login request payload");
+            throw new AuthenticationServiceException("Invalid email request payload");
         }
 
         if (StringUtils.isBlank(loginRequest.login()) || StringUtils.isEmpty(loginRequest.password())) {

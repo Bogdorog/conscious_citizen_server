@@ -62,7 +62,7 @@ class UserServiceTest {/*
         when(passwordEncoder.matches("raw-password", "encoded-password"))
                 .thenReturn(true);
 
-        AuthResult result = userService.login(new LoginRequest("test@mail.com", "raw-password"));
+        AuthResult result = userService.email(new LoginRequest("test@mail.com", "raw-password"));
 
         Assertions.assertNotNull(result);
         Assertions.assertEquals(userId.toString(), result.accessToken());
@@ -77,7 +77,7 @@ class UserServiceTest {/*
         when(passwordEncoder.matches("raw-password", "encoded-password"))
                 .thenReturn(true);
 
-        AuthResult result = userService.login(new LoginRequest("+12345678901", "raw-password"));
+        AuthResult result = userService.email(new LoginRequest("+12345678901", "raw-password"));
         Assertions.assertNotNull(result);
         Assertions.assertEquals(userId.toString(), result.accessToken());
     }
@@ -91,7 +91,7 @@ class UserServiceTest {/*
                 .thenReturn(Optional.empty());
 
         Assertions.assertThrows(IllegalArgumentException.class, () ->
-                userService.login(new LoginRequest("unknown@mail.com", "pass"))
+                userService.email(new LoginRequest("unknown@mail.com", "pass"))
         );
     }
 
@@ -105,7 +105,7 @@ class UserServiceTest {/*
                 .thenReturn(false);
 
         Assertions.assertThrows(IllegalArgumentException.class, () ->
-                userService.login(new LoginRequest("test@mail.com", "wrong"))
+                userService.email(new LoginRequest("test@mail.com", "wrong"))
         );
     }
 
@@ -130,7 +130,7 @@ class UserServiceTest {/*
                 .thenReturn(true);
 
         Assertions.assertThrows(IllegalStateException.class, () ->
-                userService.login(new LoginRequest("test@mail.com", "raw-password"))
+                userService.email(new LoginRequest("test@mail.com", "raw-password"))
         );
     }
 
