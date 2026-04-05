@@ -16,5 +16,7 @@ public interface IncidentApi {
 
     IncidentResponse getIncidentById(Long id);
 
+    Long getUserById(Long id);
+
     List<IncidentResponse> getAllDrafts(Long userId);
 }

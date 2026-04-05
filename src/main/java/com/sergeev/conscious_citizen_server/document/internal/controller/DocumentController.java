@@ -50,7 +50,7 @@ public class DocumentController {
     public void send(@PathVariable Long id) {
 
         byte[] file = documentService.download(id);
-        UserDto user = userApi.getUserById(incidentApi.getIncidentById(id).userId());
+        UserDto user = userApi.getUserById(incidentApi.getUserById(id));
 
         emailApi.sendEmailWithAttachment(
                 new SendEmailWithAttachmentRequest(

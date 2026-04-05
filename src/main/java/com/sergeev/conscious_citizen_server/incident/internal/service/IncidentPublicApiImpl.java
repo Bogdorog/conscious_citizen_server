@@ -40,4 +40,9 @@ public class IncidentPublicApiImpl implements IncidentApi {
     public IncidentResponse getIncidentById(Long id) {
         return incidentService.getById(id);
     }
+
+    @Override
+    public Long getUserById(Long id) {
+        return incidentService.getUserById(id);
+    }
 }

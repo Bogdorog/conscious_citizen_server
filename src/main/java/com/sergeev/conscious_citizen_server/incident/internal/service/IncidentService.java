@@ -8,6 +8,7 @@ import com.sergeev.conscious_citizen_server.incident.internal.entity.Incident;
 import com.sergeev.conscious_citizen_server.incident.internal.mapper.IncidentMapper;
 import com.sergeev.conscious_citizen_server.incident.internal.repository.IncidentRepository;
 import com.sergeev.conscious_citizen_server.incident.internal.repository.IncidentTypeRepository;
+import com.sergeev.conscious_citizen_server.user.api.UserApi;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,7 @@ public class IncidentService {
     private final NominatimService nominatimService;
     private final IncidentMapper mapper;
     private final IncidentTypeRepository typeRepository;
+    private final UserApi userApi;
 
     //@Cacheable(value = "incident-map")
     public List<IncidentShortResponse> getAll() {
@@ -55,6 +57,14 @@ public class IncidentService {
                 .orElseThrow(() -> new RuntimeException("Not found"));
 
         return mapper.toDto(incident);
+    }
+
+    public Long getUserById(Long id) {
+
+        Incident incident = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Not found"));
+
+        return incident.getUserId();
     }
 
     public IncidentResponse createIncident(IncidentRequest request, Long userId) {
