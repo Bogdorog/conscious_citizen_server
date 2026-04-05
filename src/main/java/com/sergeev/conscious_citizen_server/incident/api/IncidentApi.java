@@ -19,4 +19,10 @@ public interface IncidentApi {
     Long getUserById(Long id);
 
     List<IncidentResponse> getAllDrafts(Long userId);
+
+    IncidentResponse updateIncident(Long incidentId,
+                                    Long userId,
+                                    IncidentRequest request);
+
+    void deleteIncidentById(Long id, Long userId);
 }

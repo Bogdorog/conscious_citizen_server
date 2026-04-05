@@ -45,4 +45,21 @@ public class IncidentController {
         return incidentApi.getAllAdminIncidents();
     }
 
+    @PutMapping("/{id}")
+    public IncidentResponse updateIncident(
+            @PathVariable Long id,
+            @RequestBody IncidentRequest request,
+            @RequestHeader("X-User-Id") Long userId
+    ) {
+        return incidentApi.updateIncident(id, userId, request);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteIncident(
+            @PathVariable Long id,
+            @RequestHeader("X-User-Id") Long userId
+    ) {
+        incidentApi.deleteIncidentById(id, userId);
+    }
+
 }

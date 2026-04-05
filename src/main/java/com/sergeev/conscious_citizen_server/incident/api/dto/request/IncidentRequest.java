@@ -5,7 +5,7 @@ public record IncidentRequest(
         String description,
         String type,
         String address,
-        double latitude,
-        double longitude,
+        Double latitude,
+        Double longitude,
         boolean active
 ) {}

@@ -45,4 +45,17 @@ public class IncidentPublicApiImpl implements IncidentApi {
     public Long getUserById(Long id) {
         return incidentService.getUserById(id);
     }
+
+    @Override
+    public IncidentResponse updateIncident(Long incidentId,
+                                    Long userId,
+                                    IncidentRequest request)
+    {
+        return incidentService.updateIncident(incidentId, userId, request);
+    }
+
+    @Override
+    public void deleteIncidentById(Long id, Long userId) {
+        incidentService.deleteIncident(id, userId);
+    }
 }

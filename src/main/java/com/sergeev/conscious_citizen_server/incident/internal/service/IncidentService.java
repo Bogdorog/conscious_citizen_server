@@ -8,9 +8,9 @@ import com.sergeev.conscious_citizen_server.incident.internal.entity.Incident;
 import com.sergeev.conscious_citizen_server.incident.internal.mapper.IncidentMapper;
 import com.sergeev.conscious_citizen_server.incident.internal.repository.IncidentRepository;
 import com.sergeev.conscious_citizen_server.incident.internal.repository.IncidentTypeRepository;
-import com.sergeev.conscious_citizen_server.user.api.UserApi;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,7 +23,6 @@ public class IncidentService {
     private final NominatimService nominatimService;
     private final IncidentMapper mapper;
     private final IncidentTypeRepository typeRepository;
-    private final UserApi userApi;
 
     //@Cacheable(value = "incident-map")
     public List<IncidentShortResponse> getAll() {
@@ -95,4 +94,63 @@ public class IncidentService {
         return mapper.toDto(saved);
     }
 
+    @Transactional
+    public IncidentResponse updateIncident(Long incidentId,
+                                   Long userId,
+                                   IncidentRequest request) {
+
+        Incident incident = repository.findById(incidentId)
+                .orElseThrow(() -> new RuntimeException("Incident not found"));
+
+        // проверка владельца
+        if (!incident.getUserId().equals(userId)) {
+            throw new RuntimeException("Access denied");
+        }
+
+        // обновляем только если не null
+        if (request.title() != null) {
+            incident.setTitle(request.title());
+        }
+
+        if (request.description() != null) {
+            incident.setMessage(request.description());
+        }
+
+        if (request.latitude() != null) {
+            incident.setLatitude(request.latitude());
+        }
+
+        if (request.longitude() != null) {
+            incident.setLongitude(request.longitude());
+        }
+
+        if (request.address() != null) {
+            incident.setAddress(request.address());
+        }
+
+        if (request.type() != null) {
+            incident.setType(typeRepository.findByName(request.type()));
+        }
+
+        Incident saved = repository.save(incident);
+
+        return mapper.toDto(saved);
+    }
+
+    @Transactional
+    public void deleteIncident(Long incidentId, Long userId) {
+
+        Incident incident = repository.findById(incidentId)
+                .orElseThrow(() -> new RuntimeException("Инцидент не найден"));
+
+        // Проверка владельца
+        if (!incident.getUserId().equals(userId)) {
+            throw new RuntimeException("Доступ запрещен");
+        }
+
+        // ✅ soft delete
+        incident.setActive(false);
+
+        repository.save(incident);
+    }
 }
