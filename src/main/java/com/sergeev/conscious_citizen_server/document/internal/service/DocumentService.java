@@ -1,65 +1,69 @@
 package com.sergeev.conscious_citizen_server.document.internal.service;
 
+import com.sergeev.conscious_citizen_server.document.api.StorageService;
+import com.sergeev.conscious_citizen_server.exception.DocumentNotFoundException;
+import com.sergeev.conscious_citizen_server.exception.IncidentNotFoundException;
 import com.sergeev.conscious_citizen_server.incident.internal.entity.Incident;
 import com.sergeev.conscious_citizen_server.incident.internal.repository.IncidentRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class DocumentService {
 
     private final IncidentRepository incidentRepository;
-    private final DocumentTemplateService documentTemplateService;
+    private final DocumentTemplateService templateService;
     private final PdfGeneratorService pdfGenerator;
-    private final FileStorageService storageService;
+    private final StorageService storageService;
+    private final IncidentDocumentVariablesExtractor variablesExtractor;
 
-    public String generateDocument(Long incidentId) {
-
+    @Async
+    public void generateDocument(Long incidentId) {
         Incident incident = incidentRepository.findById(incidentId)
-                .orElseThrow();
+                .orElseThrow(() -> new IncidentNotFoundException(incidentId));
+
+        // Удаляем старый файл если есть
+        if (incident.getFilePath() != null) {
+            storageService.delete(incident.getFilePath());
+        }
 
         String templateName = resolveTemplateName(incident);
+        String template = templateService.loadTemplate(templateName);
+        Map<String, String> vars = variablesExtractor.extract(incident);
+        String html = templateService.fillTemplate(template, vars);
 
-        String template = documentTemplateService.loadTemplate(templateName);
+        byte[] pdf = pdfGenerator.generate(html, incident.getTitle());
 
-        // 2. подставляем данные
-        Map<String, String> vars = Map.of(
-                "title", incident.getTitle(),
-                "description", incident.getMessage(),
-                "address", incident.getAddress()
-        );
+        String storageKey = storageService.save(pdf, "incident_" + incidentId + ".pdf");
 
-        String html = documentTemplateService.fillTemplate(template, vars);
-
-        // 3. генерим PDF
-        byte[] pdf = pdfGenerator.generate(html);
-
-        // 4. сохраняем файл
-        String path = storageService.saveDocument(pdf, "incident_" + incidentId + ".pdf");
-
-        // 5. сохраняем путь в БД
-        incident.setFilePath(path);
+        incident.setFilePath(storageKey);
         incidentRepository.save(incident);
 
-        return path;
+        log.info("Document generated for incident {}", incidentId);
     }
 
     public byte[] download(Long incidentId) {
-
         Incident incident = incidentRepository.findById(incidentId)
-                .orElseThrow();
+                .orElseThrow(() -> new IncidentNotFoundException(incidentId));
 
         if (incident.getFilePath() == null) {
-            throw new IllegalStateException("Document not generated");
+            throw new DocumentNotFoundException("Document not generated for incident: " + incidentId);
         }
 
         return storageService.read(incident.getFilePath());
     }
 
     private String resolveTemplateName(Incident incident) {
+        if (incident.getType() == null) {
+            log.warn("Incident {} has no type, using default template", incident.getId());
+            return "default";
+        }
         return "incident_type_" + incident.getType().getName();
     }
 }

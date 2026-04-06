@@ -1,5 +1,7 @@
 package com.sergeev.conscious_citizen_server.document.internal.service;
 
+import com.sergeev.conscious_citizen_server.exception.TemplateNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -7,33 +9,72 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
+@Slf4j
 public class DocumentTemplateService {
+
+    // Находит все {{переменные}} в шаблоне
+    private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\{\\{(\\w+)}}");
 
     @Value("${app.storage.templates-path}")
     private String templatesPath;
 
     public String loadTemplate(String name) {
-
         try {
             Path path = Paths.get(templatesPath, name + ".html");
             return Files.readString(path);
 
         } catch (IOException e) {
-            throw new RuntimeException("Template not found", e);
+            // Пробуем fallback-шаблон
+            log.warn("Template '{}' not found, trying default", name);
+            try {
+                Path fallback = Paths.get(templatesPath, "default.html");
+                return Files.readString(fallback);
+            } catch (IOException ex) {
+                throw new TemplateNotFoundException("Template not found: " + name, ex);
+            }
         }
     }
 
     public String fillTemplate(String template, Map<String, String> vars) {
+        validateVariables(template, vars);
 
-        String result = template;
+        StringBuffer result = new StringBuffer();
+        Matcher matcher = VARIABLE_PATTERN.matcher(template);
 
-        for (var entry : vars.entrySet()) {
-            result = result.replace("{{" + entry.getKey() + "}}", entry.getValue());
+        while (matcher.find()) {
+            String key = matcher.group(1);
+            // Если переменная есть в vars — подставляем, иначе оставляем как есть
+            String replacement = vars.getOrDefault(key, matcher.group(0));
+            // quoteReplacement защищает от спецсимволов $ и \ в значениях
+            matcher.appendReplacement(result, Matcher.quoteReplacement(replacement));
         }
 
-        return result;
+        matcher.appendTail(result);
+        return result.toString();
+    }
+
+    private void validateVariables(String template, Map<String, String> vars) {
+        Matcher matcher = VARIABLE_PATTERN.matcher(template);
+        List<String> missing = new ArrayList<>();
+
+        while (matcher.find()) {
+            String key = matcher.group(1);
+            if (!vars.containsKey(key)) {
+                missing.add(key);
+            }
+        }
+
+        if (!missing.isEmpty()) {
+            log.warn("Template variables not provided: {}", missing);
+            // Предупреждение, а не исключение — незаполненные переменные останутся в PDF
+            // Поменяй на throw, если хочешь жёсткую валидацию
+        }
     }
 }
