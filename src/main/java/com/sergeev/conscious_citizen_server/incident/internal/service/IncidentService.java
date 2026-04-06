@@ -148,9 +148,6 @@ public class IncidentService {
             throw new RuntimeException("Доступ запрещен");
         }
 
-        // ✅ soft delete
-        incident.setActive(false);
-
-        repository.save(incident);
+        repository.delete(incident);
     }
 }

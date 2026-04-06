@@ -1,11 +1,14 @@
 package com.sergeev.conscious_citizen_server.user.internal.controller;
 
 import com.sergeev.conscious_citizen_server.user.api.UserApi;
+import com.sergeev.conscious_citizen_server.user.api.dto.UsersForAdmin;
 import com.sergeev.conscious_citizen_server.user.api.dto.request.PasswordResetConfirmRequest;
 import com.sergeev.conscious_citizen_server.user.api.dto.request.PasswordResetRequest;
 import com.sergeev.conscious_citizen_server.user.api.dto.request.UpdateProfileRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/user")
@@ -37,5 +40,10 @@ class UserController {
     @PostMapping("/password/reset/confirm")
     public void confirmReset(@RequestBody PasswordResetConfirmRequest request) {
         api.confirmPasswordReset(request);
+    }
+
+    @GetMapping("/admin/userstats")
+    public List<UsersForAdmin> getUsersForAdmin() {
+        return api.getUsersForAdmin();
     }
 }

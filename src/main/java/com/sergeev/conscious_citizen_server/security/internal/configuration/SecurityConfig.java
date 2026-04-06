@@ -88,6 +88,7 @@ public class SecurityConfig {
                         .requestMatchers(FORGOT_PASSWORD_POINT).permitAll()
                         .requestMatchers(RESET_PASSWORD_POINT).permitAll()
                         .requestMatchers("/api/incidents/admin").hasRole("ADMIN")
+                        .requestMatchers("/user/admin/userstats").hasRole("ADMIN")
                         .requestMatchers("/api/incidents/{incidentId}/photos").permitAll()
                         .anyRequest().authenticated()
                 )

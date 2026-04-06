@@ -2,7 +2,10 @@ package com.sergeev.conscious_citizen_server.user.api;
 
 import com.sergeev.conscious_citizen_server.user.api.dto.AuthResult;
 import com.sergeev.conscious_citizen_server.user.api.dto.UserDto;
+import com.sergeev.conscious_citizen_server.user.api.dto.UsersForAdmin;
 import com.sergeev.conscious_citizen_server.user.api.dto.request.*;
+
+import java.util.List;
 
 public interface UserApi {
 
@@ -21,4 +24,6 @@ public interface UserApi {
     UserDto getUserById(Long id);
 
     String getRole(String login);
+
+    List<UsersForAdmin> getUsersForAdmin();
 }

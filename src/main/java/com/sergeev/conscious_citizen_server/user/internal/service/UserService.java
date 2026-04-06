@@ -2,6 +2,7 @@ package com.sergeev.conscious_citizen_server.user.internal.service;
 
 import com.sergeev.conscious_citizen_server.user.api.dto.AuthResult;
 import com.sergeev.conscious_citizen_server.user.api.dto.UserDto;
+import com.sergeev.conscious_citizen_server.user.api.dto.UsersForAdmin;
 import com.sergeev.conscious_citizen_server.user.api.dto.request.*;
 import com.sergeev.conscious_citizen_server.user.api.event.PasswordResetRequestedEvent;
 import com.sergeev.conscious_citizen_server.user.api.event.UserLoggedInEvent;
@@ -20,6 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
 /*
 Список функций:
 регистрация 1
@@ -119,6 +122,10 @@ public class UserService {
         User user = repository.findByLogin(login)
                 .orElseThrow();
         return user.getRole().getName();
+    }
+
+    public List<UsersForAdmin> getUsersForAdmin() {
+        return repository.findUsersWithIncidentCount();
     }
 
     // Первый запрос о смене пароля

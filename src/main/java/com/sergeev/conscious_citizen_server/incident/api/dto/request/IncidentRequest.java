@@ -7,5 +7,5 @@ public record IncidentRequest(
         String address,
         Double latitude,
         Double longitude,
-        boolean active
+        Boolean active
 ) {}

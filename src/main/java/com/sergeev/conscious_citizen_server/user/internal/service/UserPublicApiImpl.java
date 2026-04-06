@@ -3,9 +3,12 @@ package com.sergeev.conscious_citizen_server.user.internal.service;
 import com.sergeev.conscious_citizen_server.user.api.UserApi;
 import com.sergeev.conscious_citizen_server.user.api.dto.AuthResult;
 import com.sergeev.conscious_citizen_server.user.api.dto.UserDto;
+import com.sergeev.conscious_citizen_server.user.api.dto.UsersForAdmin;
 import com.sergeev.conscious_citizen_server.user.api.dto.request.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -39,5 +42,10 @@ class UserPublicApiImpl implements UserApi {
 
     public UserDto updateProfile(UpdateProfileRequest request) {
         return service.updateProfile(request);
+    }
+
+    public List<UsersForAdmin> getUsersForAdmin()
+    {
+        return service.getUsersForAdmin();
     }
 }
