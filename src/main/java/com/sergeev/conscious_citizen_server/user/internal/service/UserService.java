@@ -124,6 +124,12 @@ public class UserService {
         return user.getRole().getName();
     }
 
+    public String getRole(Long id) {
+        User user = repository.findById(id)
+                .orElseThrow();
+        return user.getRole().getName();
+    }
+
     public List<UsersForAdmin> getUsersForAdmin() {
         return repository.findUsersWithIncidentCount();
     }

@@ -15,5 +15,6 @@ public interface MediaApi {
     void delete(UUID id) throws Exception;
     String buildDownloadUrl(UUID id);
     List<MediaAssetDto> findByIncidentId(Long incidentId);
+    Long getSize(MediaAssetDto a);
 }
 

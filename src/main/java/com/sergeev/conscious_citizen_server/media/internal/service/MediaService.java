@@ -77,11 +77,21 @@ public class MediaService implements MediaApi{
     }
 
     @Override
+    public Long getSize(MediaAssetDto a) {
+        MediaAsset asset = mediaRepo.findById(a.id())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Медиафайл не найден"));
+
+        Path path = storageRoot.resolve(asset.getFilePath()).normalize();
+        if (!Files.exists(path))
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Файл отсутствует на диске");
+        return path.toFile().length();
+    }
+
+    @Override
     public InputStream download(UUID id) throws IOException {
         MediaAsset a = mediaRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Медиафайл не найден"));
 
-        // Используем тот же storageRoot, что и FileSystemStorage — никаких user.dir
         Path path = storageRoot.resolve(a.getFilePath()).normalize();
         if (!Files.exists(path))
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Файл отсутствует на диске");

@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.UUID;
 
@@ -28,22 +27,31 @@ public class MediaController {
     }
 
     @GetMapping("/{id}/download")
-    public ResponseEntity<StreamingResponseBody> download(@PathVariable UUID id) throws IOException {
+    public ResponseEntity<StreamingResponseBody> download(@PathVariable UUID id) throws Exception {
         MediaAssetDto meta = mediaApi.getMeta(id);
 
         // Определяем Content-Type по имени файла из метаданных
         String filename  = meta.fileName() != null ? meta.fileName() : "file";
         MediaType contentType = resolveMediaType(filename);
+        Long len = 0L;
+        try {
+            len = mediaApi.getSize(meta);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
 
         StreamingResponseBody body = out -> {
             try (InputStream in = mediaApi.download(id)) {
                 in.transferTo(out);
             }
-            catch (Exception e) {}
+            catch (Exception e) {
+                System.err.println(e.getMessage());
+            }
         };
 
         return ResponseEntity.ok()
                 .contentType(contentType)
+                .contentLength(len)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
                 .body(body);
     }

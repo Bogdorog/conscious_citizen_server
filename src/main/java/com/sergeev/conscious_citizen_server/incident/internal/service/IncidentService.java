@@ -8,6 +8,7 @@ import com.sergeev.conscious_citizen_server.incident.internal.entity.Incident;
 import com.sergeev.conscious_citizen_server.incident.internal.mapper.IncidentMapper;
 import com.sergeev.conscious_citizen_server.incident.internal.repository.IncidentRepository;
 import com.sergeev.conscious_citizen_server.incident.internal.repository.IncidentTypeRepository;
+import com.sergeev.conscious_citizen_server.user.api.UserApi;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,7 @@ public class IncidentService {
     private final NominatimService nominatimService;
     private final IncidentMapper mapper;
     private final IncidentTypeRepository typeRepository;
+    private final UserApi userApi;
 
     //@Cacheable(value = "incident-map")
     public List<IncidentShortResponse> getAll() {
@@ -53,7 +55,7 @@ public class IncidentService {
     public IncidentResponse getById(Long id) {
 
         Incident incident = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Not found"));
+                .orElseThrow(() -> new RuntimeException("Инцидент не найден"));
 
         return mapper.toDto(incident);
     }
@@ -61,7 +63,7 @@ public class IncidentService {
     public Long getUserById(Long id) {
 
         Incident incident = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Not found"));
+                .orElseThrow(() -> new RuntimeException("Инцидент не найден"));
 
         return incident.getUserId();
     }
@@ -100,11 +102,11 @@ public class IncidentService {
                                    IncidentRequest request) {
 
         Incident incident = repository.findById(incidentId)
-                .orElseThrow(() -> new RuntimeException("Incident not found"));
+                .orElseThrow(() -> new RuntimeException("Инцидент не найден"));
 
         // проверка владельца
-        if (!incident.getUserId().equals(userId)) {
-            throw new RuntimeException("Access denied");
+        if (!incident.getUserId().equals(userId)  && userApi.getRole(userId).equals("ADMIN") ) {
+            throw new RuntimeException("Доступ запрещен");
         }
 
         // обновляем только если не null
@@ -144,7 +146,7 @@ public class IncidentService {
                 .orElseThrow(() -> new RuntimeException("Инцидент не найден"));
 
         // Проверка владельца
-        if (!incident.getUserId().equals(userId)) {
+        if (!incident.getUserId().equals(userId) && userApi.getRole(userId).equals("ADMIN") ) {
             throw new RuntimeException("Доступ запрещен");
         }
 

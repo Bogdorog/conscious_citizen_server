@@ -25,5 +25,7 @@ public interface UserApi {
 
     String getRole(String login);
 
+    String getRole(Long id);
+
     List<UsersForAdmin> getUsersForAdmin();
 }
