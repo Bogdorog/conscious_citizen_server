@@ -48,6 +48,26 @@ public class DocumentService {
         log.info("Document generated for incident {}", incidentId);
     }
 
+    @Async
+    public void generateDocumentFromContent(Long incidentId, String html) {
+        Incident incident = incidentRepository.findById(incidentId)
+                .orElseThrow(() -> new IncidentNotFoundException(incidentId));
+
+        // Удаляем старый файл если есть
+        if (incident.getFilePath() != null) {
+            storageService.delete(incident.getFilePath());
+        }
+
+        byte[] pdf = pdfGenerator.generate(html, incident.getTitle());
+
+        String storageKey = storageService.save(pdf, "incident_" + incidentId + ".pdf");
+
+        incident.setFilePath(storageKey);
+        incidentRepository.save(incident);
+
+        log.info("Document regenerated from custom content for incident {}", incidentId);
+    }
+
     public byte[] download(Long incidentId) {
         Incident incident = incidentRepository.findById(incidentId)
                 .orElseThrow(() -> new IncidentNotFoundException(incidentId));

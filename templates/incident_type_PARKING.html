@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8"/>
+    <style>
+        body {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 14pt;
+            margin: 0;
+            padding: 40px 60px;
+            color: #000;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+        }
+
+        .header-left {
+            width: 45%;
+        }
+
+        .header-right {
+            width: 45%;
+            text-align: left;
+        }
+
+        .header-right p {
+            margin: 4px 0;
+        }
+
+        .date {
+            text-align: right;
+            margin-bottom: 30px;
+        }
+
+        .title {
+            text-align: center;
+            font-weight: bold;
+            font-size: 16pt;
+            margin-bottom: 24px;
+        }
+
+        .body-text {
+            text-align: justify;
+            line-height: 1.6;
+            margin-bottom: 16px;
+            text-indent: 40px;
+        }
+
+        .section-title {
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
+
+        ol {
+            margin: 0 0 16px 0;
+            padding-left: 20px;
+        }
+
+        ol li {
+            line-height: 1.6;
+            margin-bottom: 6px;
+        }
+
+        .signature {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .signature-name {
+            width: 60%;
+        }
+
+        .signature-sign {
+            width: 35%;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-left"></div>
+    <div class="header-right">
+        <p>{{recipientTitle}}</p>
+        <p>{{recipientAddress}}</p>
+        <p>&nbsp;</p>
+        <p>От {{applicantFullName}}</p>
+        <p>Паспорт {{applicantPassport}}</p>
+        <p>Адрес регистрации: {{applicantAddress}}</p>
+    </div>
+</div>
+
+<div class="date">{{documentDate}}</div>
+
+<div class="title">{{documentTitle}}</div>
+
+<p class="body-text">
+    Я, {{applicantFullName}}, зафиксировал нарушение правил дорожного движения,
+    а именно {{violationLaw}} — {{violationDescription}}.
+    {{violationDate}} {{vehicleDescription}}, госномер {{vehiclePlate}},
+    была припаркована в непосредственной близости к {{violationLocation}}.
+    Фотографии автомобиля нарушителя прилагаются.
+</p>
+
+<p class="body-text">На основании вышеизложенного,</p>
+
+<p class="section-title">Прошу:</p>
+<ol>
+    <li>
+        Принять меры по факту обращения, привлечь водителя к административной
+        ответственности в соответствии со {{responsibilityLaw}}.
+    </li>
+</ol>
+
+<p class="section-title">Приложения:</p>
+<ol>
+    <li>Фотографии неправильно припаркованного автомобиля.</li>
+</ol>
+
+<div class="signature">
+    <div class="signature-name">{{applicantFullName}} ({{applicantLastName}})</div>
+    <div class="signature-sign">_______________________</div>
+</div>
+
+</body>
+</html>

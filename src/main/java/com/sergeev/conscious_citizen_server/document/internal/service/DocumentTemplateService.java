@@ -43,21 +43,36 @@ public class DocumentTemplateService {
     }
 
     public String fillTemplate(String template, Map<String, String> vars) {
-        validateVariables(template, vars);
+        logMissingVariables(template, vars);
 
         StringBuffer result = new StringBuffer();
         Matcher matcher = VARIABLE_PATTERN.matcher(template);
 
         while (matcher.find()) {
             String key = matcher.group(1);
-            // Если переменная есть в vars — подставляем, иначе оставляем как есть
-            String replacement = vars.getOrDefault(key, matcher.group(0));
-            // quoteReplacement защищает от спецсимволов $ и \ в значениях
+            // Если переменная есть — подставляем значение, иначе показываем [название]
+            String replacement = vars.getOrDefault(key, "[" + key + "]");
             matcher.appendReplacement(result, Matcher.quoteReplacement(replacement));
         }
 
         matcher.appendTail(result);
         return result.toString();
+    }
+
+    private void logMissingVariables(String template, Map<String, String> vars) {
+        Matcher matcher = VARIABLE_PATTERN.matcher(template);
+        List<String> missing = new ArrayList<>();
+
+        while (matcher.find()) {
+            String key = matcher.group(1);
+            if (!vars.containsKey(key)) {
+                missing.add(key);
+            }
+        }
+
+        if (!missing.isEmpty()) {
+            log.warn("Template variables not provided, will use placeholders: {}", missing);
+        }
     }
 
     private void validateVariables(String template, Map<String, String> vars) {

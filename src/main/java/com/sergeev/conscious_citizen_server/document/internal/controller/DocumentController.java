@@ -47,4 +47,11 @@ public class DocumentController {
         documentFacade.sendByEmail(id);
         return ResponseEntity.ok().build();
     }
+
+    @PatchMapping("/{id}/document/content")
+    public ResponseEntity<Void> updateContent(@PathVariable Long id,
+                                              @RequestBody String html) {
+        documentService.generateDocumentFromContent(id, html);
+        return ResponseEntity.accepted().build();
+    }
 }
