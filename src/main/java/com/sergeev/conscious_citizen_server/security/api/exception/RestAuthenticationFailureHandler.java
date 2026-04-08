@@ -1,6 +1,5 @@
-package com.sergeev.conscious_citizen_server.security.internal.exception;
+package com.sergeev.conscious_citizen_server.security.api.exception;
 
-import com.sergeev.conscious_citizen_server.security.api.exception.ErrorResponseHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;

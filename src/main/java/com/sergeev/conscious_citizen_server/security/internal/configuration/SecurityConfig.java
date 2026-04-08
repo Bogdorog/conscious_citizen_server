@@ -1,19 +1,17 @@
 package com.sergeev.conscious_citizen_server.security.internal.configuration;
 
 import com.sergeev.conscious_citizen_server.security.api.exception.ErrorResponseHandler;
-import com.sergeev.conscious_citizen_server.security.internal.jwt.JwtTokenProvider;
 import com.sergeev.conscious_citizen_server.security.internal.jwt.RefreshTokenAuthenticationFilter;
-import com.sergeev.conscious_citizen_server.security.internal.jwt.TokenAuthenticationFilter;
 import com.sergeev.conscious_citizen_server.security.internal.login.LoginAuthenticationFilter;
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -29,6 +27,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     public static final String SIGNIN_ENTRY_POINT = "/auth/login";
@@ -38,26 +37,10 @@ public class SecurityConfig {
     public static final String RESET_PASSWORD_POINT = "/user/password/reset/confirm";
     public static final String API_DOCS_ENTRY_POINT = "/api-docs/**";
     public static final String TOKEN_REFRESH_ENTRY_POINT = "/auth/refreshToken";
-    private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
-    private final AuthenticationSuccessHandler authenticationSuccessHandler;
     private final AuthenticationFailureHandler failureHandler;
-    private final UserDetailsService userDetailsService;
     private final ErrorResponseHandler accessDeniedHandler;
-
-
-    public SecurityConfig(final JwtTokenProvider jwtTokenProvider,
-                          final AuthenticationManager authenticationManager,
-                          @Qualifier("loginAuthenticationSuccessHandler") final AuthenticationSuccessHandler authenticationSuccessHandler,
-                          final ErrorResponseHandler accessDeniedHandler,
-                          final AuthenticationFailureHandler failureHandler, UserDetailsService userDetailsService) {
-        this.jwtTokenProvider = jwtTokenProvider;
-        this.authenticationManager = authenticationManager;
-        this.authenticationSuccessHandler = authenticationSuccessHandler;
-        this.accessDeniedHandler = accessDeniedHandler;
-        this.failureHandler = failureHandler;
-        this.userDetailsService = userDetailsService;
-    }
+    private final AuthenticationSuccessHandler authenticationSuccessHandler;
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
@@ -92,9 +75,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/incidents/{incidentId}/photos").permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(buildTokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(buildLoginProcessingFilter(), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(buildRefreshTokenProcessingFilter(), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(buildRefreshTokenProcessingFilter(), UsernamePasswordAuthenticationFilter.class)
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(Customizer.withDefaults())
+                );
         return http.build();
     }
 
@@ -106,9 +91,6 @@ public class SecurityConfig {
         return filter;
     }
 
-    protected TokenAuthenticationFilter buildTokenAuthenticationFilter() {
-        return new TokenAuthenticationFilter(jwtTokenProvider, userDetailsService);
-    }
 
     @Bean
     protected RefreshTokenAuthenticationFilter buildRefreshTokenProcessingFilter() {

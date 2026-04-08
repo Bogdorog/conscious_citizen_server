@@ -10,6 +10,7 @@ import com.sergeev.conscious_citizen_server.incident.internal.repository.Inciden
 import com.sergeev.conscious_citizen_server.incident.internal.repository.IncidentTypeRepository;
 import com.sergeev.conscious_citizen_server.user.api.UserApi;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +27,7 @@ public class IncidentService {
     private final IncidentTypeRepository typeRepository;
     private final UserApi userApi;
 
-    //@Cacheable(value = "incident-map")
+    @Cacheable(value = "incident-map")
     public List<IncidentShortResponse> getAll() {
 
         return repository.findAllByActiveTrue()
@@ -51,7 +52,7 @@ public class IncidentService {
                 .toList();
     }
 
-    //@Cacheable(value = "incident-details", key = "#id")
+    @Cacheable(value = "incident-details", key = "#id")
     public IncidentResponse getById(Long id) {
 
         Incident incident = repository.findById(id)

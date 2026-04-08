@@ -1,31 +1,31 @@
 package com.sergeev.conscious_citizen_server.security.internal.jwt;
 
-import com.sergeev.conscious_citizen_server.security.internal.exception.ExpiredTokenException;
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.Keys;
-import jakarta.servlet.http.HttpServletRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.sergeev.conscious_citizen_server.security.api.exception.InvalidRefreshTokenException;
+import com.sergeev.conscious_citizen_server.security.internal.jwt.entity.RefreshToken;
+import com.sergeev.conscious_citizen_server.security.internal.jwt.repository.RefreshTokenRepository;
+import io.jsonwebtoken.Jwts;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.AuthenticationServiceException;
-import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.crypto.SecretKey;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Date;
-// В этом классе происходит генерация jwt
+import java.util.UUID;
+
 @Component
+@RequiredArgsConstructor
+@Slf4j
 public class JwtTokenProvider {
 
-    private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
-    public static final String HEADER = "Authorization";
-    public static final String JWT_TOKEN_HEADER_PARAM = HEADER;
-    public static final String HEADER_PREFIX = "Bearer ";
-    private final UserDetailsService userDetailsService;
-    private final SecretKey jwtSecret = Keys.secretKeyFor(SignatureAlgorithm.HS512);
+    private final SecretKey jwtSecretKey;
+
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Value("${security.jwt.tokenExpirationTime}")
     private int tokenExpirationInSec;
@@ -33,78 +33,61 @@ public class JwtTokenProvider {
     @Value("${security.jwt.refreshTokenExpirationTime}")
     private int refreshTokenExpirationInSec;
 
-    public JwtTokenProvider(final UserDetailsService userDetailsService) {
-        this.userDetailsService = userDetailsService;
-    }
 
-    public JwtPair generateTokenPair(final UserDetails user) {
-        String token = createToken(user);
-        String refreshToken = createRefreshToken(user);
-        return new JwtPair(token, refreshToken);
-    }
+    public String generateAccessToken(UserDetails userDetails) {
+        Instant now = Instant.now();
+        Instant expiry = now.plusSeconds(tokenExpirationInSec);
 
-    private String createRefreshToken(final UserDetails user) {
+        log.info("Generating access token with Key: {}", jwtSecretKey);
+
         return Jwts.builder()
-                .setSubject(user.getUsername())
-                .setIssuedAt(new Date())
-                .setExpiration(getExpiryDate(refreshTokenExpirationInSec))
-                .signWith(SignatureAlgorithm.HS512, jwtSecret)
+                .subject(userDetails.getUsername())
+                .claim("roles", userDetails.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .toList())
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(expiry))
+                .signWith(jwtSecretKey, Jwts.SIG.HS512)
                 .compact();
     }
 
-    private String createToken(final UserDetails user) {
-        return Jwts.builder()
-                .setSubject(user.getUsername())
-                .setIssuedAt(new Date())
-                .setExpiration(getExpiryDate(tokenExpirationInSec))
-                .signWith(SignatureAlgorithm.HS512, jwtSecret)
-                .compact();
+    @Transactional
+    public String generateRefreshToken(Long userId) {
+        // Удаляем старый refresh токен если есть
+        refreshTokenRepository.deleteByUserId(userId);
+        refreshTokenRepository.flush();
+
+        String tokenValue = UUID.randomUUID().toString();
+
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setToken(tokenValue);
+        refreshToken.setUserId(userId);
+        refreshToken.setExpiresAt(
+                LocalDateTime.now().plusSeconds(refreshTokenExpirationInSec)
+        );
+
+        refreshTokenRepository.save(refreshToken);
+
+        log.info("Refresh token generated for user {}", userId);
+        return tokenValue;
     }
 
-    private Date getExpiryDate(final int tokenExpirationInSec) {
-        Date now = new Date();
-        return new Date(now.getTime() + tokenExpirationInSec * 1000L);
-    }
+    @Transactional
+    public RefreshToken validateRefreshToken(String token) {
+        RefreshToken refreshToken = refreshTokenRepository.findByToken(token)
+                .orElseThrow(() -> new InvalidRefreshTokenException("Refresh token not found"));
 
-    public UserDetails parseJwtToken(final String accessToken) {
-        UserDetails userDetails = null;
-        if (StringUtils.hasText(accessToken) && validateToken(accessToken)) {
-            String username = getUserNameFromJwtToken(accessToken);
-            userDetails = userDetailsService.loadUserByUsername(username);
+        if (refreshToken.isExpired()) {
+            refreshTokenRepository.delete(refreshToken);
+            throw new InvalidRefreshTokenException("Refresh token expired");
         }
-        return userDetails;
+
+        return refreshToken;
     }
 
-    public String getUserNameFromJwtToken(final String token) {
-        return Jwts.parser()
-                .setSigningKey(jwtSecret)
-                .build()
-                .parseClaimsJws(token)
-                .getBody().getSubject();
-    }
-
-    public boolean validateToken(final String authToken) {
-        try {
-            Jwts.parser().setSigningKey(jwtSecret).build().parseClaimsJws(authToken);
-            return true;
-        } catch (UnsupportedJwtException | MalformedJwtException | IllegalArgumentException ex) {
-            logger.debug("Invalid JWT Token", ex);
-            throw new BadCredentialsException("Invalid JWT token: ", ex);
-        } catch (SignatureException | ExpiredJwtException expiredEx) {
-            logger.debug("JWT Token is expired", expiredEx);
-            throw new ExpiredTokenException(authToken, "JWT Token expired", expiredEx);
-        }
-    }
-
-    public String getTokenFromRequest(final HttpServletRequest request) {
-        String header = request.getHeader(JWT_TOKEN_HEADER_PARAM);
-        if (org.apache.commons.lang3.StringUtils.isBlank(header)) {
-            throw new AuthenticationServiceException("Authorization header cannot be blank!");
-        }
-        if (header.length() < HEADER_PREFIX.length()) {
-            throw new AuthenticationServiceException("Invalid authorization header size.");
-        }
-        return header.substring(HEADER_PREFIX.length());
+    @Transactional
+    public void revokeRefreshToken(Long userId) {
+        refreshTokenRepository.deleteByUserId(userId);
+        log.info("Refresh token revoked for user {}", userId);
     }
 }
-

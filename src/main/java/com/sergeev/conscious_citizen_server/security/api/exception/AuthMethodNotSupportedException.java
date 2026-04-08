@@ -1,4 +1,4 @@
-package com.sergeev.conscious_citizen_server.security.internal.exception;
+package com.sergeev.conscious_citizen_server.security.api.exception;
 
 import org.springframework.security.authentication.AuthenticationServiceException;
 

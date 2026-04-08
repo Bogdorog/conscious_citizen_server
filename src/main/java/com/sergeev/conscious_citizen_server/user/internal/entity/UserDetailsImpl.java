@@ -11,11 +11,13 @@ import java.util.List;
 import java.util.Objects;
 
 public class UserDetailsImpl implements UserDetails {
+
     @Serial
     private static final long serialVersionUID = 1L;
     private final Long id;
     private final String username;
     private final String email;
+    private final boolean active;
     @JsonIgnore
     private final String password;
     private final Collection<? extends GrantedAuthority> authorities;
@@ -26,6 +28,7 @@ public class UserDetailsImpl implements UserDetails {
         this.email = user.getEmail();
         this.password = user.getPasswordHash();
         this.authorities = authorities;
+        this.active = user.isActive();
     }
 
 
@@ -45,9 +48,6 @@ public class UserDetailsImpl implements UserDetails {
 
     public Long getId() {
         return id;
-    }
-    public String getEmail() {
-        return email;
     }
 
     @Override
@@ -82,7 +82,7 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return active;
     }
 
     @Override

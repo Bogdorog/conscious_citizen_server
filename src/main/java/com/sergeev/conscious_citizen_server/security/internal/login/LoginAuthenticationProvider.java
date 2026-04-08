@@ -1,6 +1,8 @@
 package com.sergeev.conscious_citizen_server.security.internal.login;
 
 import com.sergeev.conscious_citizen_server.user.internal.service.UserDetailsServiceImpl;
+import io.github.resilience4j.core.lang.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -12,38 +14,40 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 
 @Component
+@Slf4j
 public class LoginAuthenticationProvider implements AuthenticationProvider {
-    private final PasswordEncoder encoder;
+
+    private final PasswordEncoder passwordEncoder;
     private final UserDetailsService userDetailsService;
 
     @Autowired
     public LoginAuthenticationProvider(final UserDetailsServiceImpl userDetailsService) {
-        this.encoder = new BCryptPasswordEncoder();
+        this.passwordEncoder = new BCryptPasswordEncoder();
         this.userDetailsService = userDetailsService;
     }
 
     @Override
-    public Authentication authenticate(final Authentication authentication) throws AuthenticationException {
-        Assert.notNull(authentication, "No authentication data provided");
+    public Authentication authenticate(@NonNull final Authentication authentication)
+            throws AuthenticationException {
+
         String username = (String) authentication.getPrincipal();
         String password = authentication.getCredentials().toString();
-        UserDetails securityUser = authenticateByUsernameAndPassword(username, password);
-        return new UsernamePasswordAuthenticationToken(securityUser, null, securityUser.getAuthorities());
-    }
 
-    private UserDetails authenticateByUsernameAndPassword(final String login, final String password) {
-        UserDetails user = userDetailsService.loadUserByUsername(login);
-        if (!encoder.matches(password, user.getPassword())) {
-            throw new BadCredentialsException("exception.badCredentials");
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+        if (!passwordEncoder.matches(password, userDetails.getPassword())) {
+            log.debug("Authentication failed: invalid password for user '{}'", username);
+            throw new BadCredentialsException("Invalid username or password");
         }
-        return user;
+
+        log.debug("Authentication successful for user '{}'", username);
+        return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 
     @Override
-    public boolean supports(final Class<?> authentication) {
-        return (UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication));
+    public boolean supports(@NonNull final Class<?> authentication) {
+        return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);
     }
 }

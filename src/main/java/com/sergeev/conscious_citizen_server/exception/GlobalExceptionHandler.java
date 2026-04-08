@@ -1,6 +1,7 @@
 package com.sergeev.conscious_citizen_server.exception;
 
 import com.sergeev.conscious_citizen_server.exception.dto.ErrorResponse;
+import com.sergeev.conscious_citizen_server.security.api.exception.InvalidRefreshTokenException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -80,6 +81,19 @@ public class GlobalExceptionHandler {
                         LocalDateTime.now(),
                         HttpStatus.NOT_FOUND.value(),
                         HttpStatus.NOT_FOUND.getReasonPhrase(),
+                        ex.getMessage(),
+                        request.getRequestURI()
+                ));
+    }
+
+    @ExceptionHandler(InvalidRefreshTokenException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidRefreshToken(
+            InvalidRefreshTokenException ex, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse(
+                        LocalDateTime.now(),
+                        HttpStatus.UNAUTHORIZED.value(),
+                        HttpStatus.UNAUTHORIZED.getReasonPhrase(),
                         ex.getMessage(),
                         request.getRequestURI()
                 ));

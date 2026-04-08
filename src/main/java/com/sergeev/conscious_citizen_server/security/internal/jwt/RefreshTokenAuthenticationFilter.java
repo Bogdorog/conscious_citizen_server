@@ -1,7 +1,7 @@
 package com.sergeev.conscious_citizen_server.security.internal.jwt;
 
 import com.sergeev.conscious_citizen_server.security.api.dto.RefreshTokenDTO;
-import com.sergeev.conscious_citizen_server.security.internal.exception.AuthMethodNotSupportedException;
+import com.sergeev.conscious_citizen_server.security.api.exception.AuthMethodNotSupportedException;
 import com.sergeev.conscious_citizen_server.security.internal.utils.JsonUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

@@ -1,5 +1,6 @@
 package com.sergeev.conscious_citizen_server.user.internal.service;
 
+import com.sergeev.conscious_citizen_server.user.api.CustomUserDetailsService;
 import com.sergeev.conscious_citizen_server.user.internal.entity.User;
 import com.sergeev.conscious_citizen_server.user.internal.entity.UserDetailsImpl;
 import com.sergeev.conscious_citizen_server.user.internal.repository.UserRepository;
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class UserDetailsServiceImpl implements UserDetailsService {
+public class UserDetailsServiceImpl implements CustomUserDetailsService, UserDetailsService {
 
     private final UserRepository userRepository;
 
@@ -22,7 +23,18 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Transactional
     public UserDetails loadUserByUsername(final String login) throws UsernameNotFoundException {
         User user = userRepository.findByLogin(login)
-                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + login));
+                .orElseThrow(() -> new UsernameNotFoundException("Не существует пользователя с логином: " + login));
         return UserDetailsImpl.build(user);
+    }
+
+    @Transactional
+    public UserDetails loadUserById(final Long id) throws UsernameNotFoundException {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("Не существует пользователя с id: " + id));
+        return UserDetailsImpl.build(user);
+    }
+
+    public Long getId(UserDetails user) {
+        return ((UserDetailsImpl) user).getId();
     }
 }

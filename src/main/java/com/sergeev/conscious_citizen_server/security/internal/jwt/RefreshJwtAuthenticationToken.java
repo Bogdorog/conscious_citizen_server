@@ -1,39 +1,42 @@
 package com.sergeev.conscious_citizen_server.security.internal.jwt;
 
 import org.springframework.security.authentication.AbstractAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
+import java.util.Collections;
 
 public class RefreshJwtAuthenticationToken extends AbstractAuthenticationToken {
-    private String rawAccessToken;
 
-    public RefreshJwtAuthenticationToken(String rawAccessToken) {
-        super((Collection<? extends GrantedAuthority>) null);
-        this.rawAccessToken = rawAccessToken;
-        setAuthenticated(false);
+    private final String refreshToken;
+    private final Object principal;
+
+    // До аутентификации — только неаутентифицированный токен
+    public RefreshJwtAuthenticationToken(String refreshToken) {
+        super(Collections.emptyList());
+        this.refreshToken = refreshToken;
+        this.principal = null;
+        setAuthenticated(false); // токен не аутентифицирован
     }
 
+    // После аутентификации — с principal и authorities
     public RefreshJwtAuthenticationToken(UserDetails userDetails) {
         super(userDetails.getAuthorities());
-        super.setAuthenticated(true);
-        super.eraseCredentials();
+        this.refreshToken = null;
+        this.principal = userDetails;
+        setAuthenticated(true);
     }
 
     @Override
     public Object getCredentials() {
-        return rawAccessToken;
+        return refreshToken;
     }
 
     @Override
     public Object getPrincipal() {
-        return null;
+        return principal;
     }
 
-    @Override
-    public void eraseCredentials() {
-        super.eraseCredentials();
-        this.rawAccessToken = null;
+    public String getRefreshToken() {
+        return refreshToken;
     }
 }

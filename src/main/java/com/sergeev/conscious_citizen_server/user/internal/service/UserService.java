@@ -23,14 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/*
-Список функций:
-регистрация 1
-вход 1
-изменение профиля 1
-данные профиля переделать
-смена пароля 1
- */
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -42,7 +34,7 @@ public class UserService {
     private final PasswordChangeService passwordChangeService;
 
     @Transactional
-    public Long register(RegisterUserRequest request) {
+    public void register(RegisterUserRequest request) {
 
         if (repository.existsByEmail(request.email())) {
             throw new IllegalArgumentException("Пользователь с таким e-mail уже существует");
@@ -66,8 +58,6 @@ public class UserService {
         );
 
         publisher.publishEvent(new UserRegisteredEvent(user.getId()));
-
-        return user.getId();
     }
 
     public AuthResult login(LoginRequest request) {
