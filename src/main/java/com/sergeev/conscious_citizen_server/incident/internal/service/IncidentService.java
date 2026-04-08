@@ -114,7 +114,7 @@ public class IncidentService {
                 .orElseThrow(() -> new RuntimeException("Инцидент не найден"));
 
         // проверка владельца
-        if (!incident.getUserId().equals(userId)  && userApi.getRole(userId).equals("ADMIN") ) {
+        if (!incident.getUserId().equals(userId)  && !userApi.getRole(userId).equals("ADMIN") ) {
             throw new RuntimeException("Доступ запрещен");
         }
 
@@ -139,6 +139,10 @@ public class IncidentService {
             incident.setAddress(request.address());
         }
 
+        if (request.active() != null) {
+            incident.setActive(request.active());
+        }
+
         if (request.type() != null) {
             incident.setType(typeRepository.findByName(request.type()));
         }
@@ -156,7 +160,7 @@ public class IncidentService {
                 .orElseThrow(() -> new RuntimeException("Инцидент не найден"));
 
         // Проверка владельца
-        if (!incident.getUserId().equals(userId) && userApi.getRole(userId).equals("ADMIN") ) {
+        if (!incident.getUserId().equals(userId) && !userApi.getRole(userId).equals("ADMIN") ) {
             throw new RuntimeException("Доступ запрещен");
         }
 

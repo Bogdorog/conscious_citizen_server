@@ -38,8 +38,6 @@ public class JwtTokenProvider {
         Instant now = Instant.now();
         Instant expiry = now.plusSeconds(tokenExpirationInSec);
 
-        log.info("Generating access token with Key: {}", jwtSecretKey);
-
         return Jwts.builder()
                 .subject(userDetails.getUsername())
                 .claim("roles", userDetails.getAuthorities().stream()
@@ -68,7 +66,7 @@ public class JwtTokenProvider {
 
         refreshTokenRepository.save(refreshToken);
 
-        log.info("Refresh token generated for user {}", userId);
+        log.debug("Refresh token generated for user {}", userId);
         return tokenValue;
     }
 
