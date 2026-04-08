@@ -10,6 +10,7 @@ import com.sergeev.conscious_citizen_server.incident.internal.repository.Inciden
 import com.sergeev.conscious_citizen_server.incident.internal.repository.IncidentTypeRepository;
 import com.sergeev.conscious_citizen_server.user.api.UserApi;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +53,11 @@ public class IncidentService {
                 .toList();
     }
 
+    Integer getCount(Long userId)
+    {
+        return repository.countByUserId(userId);
+    }
+
     @Cacheable(value = "incident-details", key = "#id")
     public IncidentResponse getById(Long id) {
 
@@ -69,6 +75,7 @@ public class IncidentService {
         return incident.getUserId();
     }
 
+    @CacheEvict(value = "incident-map", allEntries = true)
     public IncidentResponse createIncident(IncidentRequest request, Long userId) {
 
         Incident incident = new Incident();
@@ -98,6 +105,7 @@ public class IncidentService {
     }
 
     @Transactional
+    @CacheEvict(value = {"incident-map", "incident-details"}, allEntries = true)
     public IncidentResponse updateIncident(Long incidentId,
                                    Long userId,
                                    IncidentRequest request) {
@@ -141,6 +149,7 @@ public class IncidentService {
     }
 
     @Transactional
+    @CacheEvict(value = {"incident-map", "incident-details"}, allEntries = true)
     public void deleteIncident(Long incidentId, Long userId) {
 
         Incident incident = repository.findById(incidentId)

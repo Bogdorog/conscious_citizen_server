@@ -10,4 +10,6 @@ public interface IncidentRepository extends JpaRepository<Incident, Long>
     List<Incident> findAllByActiveTrue();
 
     List<Incident> findAllByActiveFalseAndUserId(Long userId);
+
+    Integer countByUserId(Long userId);
 }

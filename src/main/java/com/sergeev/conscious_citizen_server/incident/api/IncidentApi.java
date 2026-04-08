@@ -14,6 +14,8 @@ public interface IncidentApi {
 
     List<IncidentAdminResponse> getAllAdminIncidents();
 
+    Integer getCount(Long userId);
+
     IncidentResponse getIncidentById(Long id);
 
     Long getUserById(Long id);

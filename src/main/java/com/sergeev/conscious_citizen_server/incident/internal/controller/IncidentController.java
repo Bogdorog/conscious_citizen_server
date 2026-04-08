@@ -30,6 +30,11 @@ public class IncidentController {
         return incidentApi.getAllIncidents();
     }
 
+    @GetMapping("/count")
+    public Integer getCount(@RequestHeader("X-User-Id") Long userId) {
+        return incidentApi.getCount(userId);
+    }
+
     @GetMapping("/drafts")
     public List<IncidentResponse> getAllDrafts(@RequestHeader("X-User-Id") Long userId) {
         return incidentApi.getAllDrafts(userId);

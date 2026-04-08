@@ -15,6 +15,8 @@ import com.sergeev.conscious_citizen_server.user.internal.mapper.UserMapper;
 import com.sergeev.conscious_citizen_server.user.internal.repository.PasswordResetTokenRepository;
 import com.sergeev.conscious_citizen_server.user.internal.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,7 @@ public class UserService {
     private final PasswordChangeService passwordChangeService;
 
     @Transactional
+    @CachePut(value = "user", key = "#request.login()")
     public void register(RegisterUserRequest request) {
 
         if (repository.existsByEmail(request.email())) {
@@ -80,6 +83,7 @@ public class UserService {
     }
 
     @Transactional
+    @CachePut(value = "user", key = "#request.login()")
     public UserDto updateProfile(UpdateProfileRequest request) {
 
         User user = repository.findByLogin(request.login())
@@ -96,12 +100,14 @@ public class UserService {
         return userMapper.toResponse(user);
     }
 
+    @Cacheable(value = "user", key = "#login")
     public UserDto get(String login) {
         User user = repository.findByLogin(login)
                 .orElseThrow();
         return userMapper.toResponse(user);
     }
 
+    @Cacheable(value = "user")
     public UserDto getById(Long id) {
         User user = repository.findById(id)
                 .orElseThrow();

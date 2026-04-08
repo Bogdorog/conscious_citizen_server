@@ -47,6 +47,11 @@ public class IncidentPublicApiImpl implements IncidentApi {
     }
 
     @Override
+    public Integer getCount(Long userId) {
+        return incidentService.getCount(userId);
+    }
+
+    @Override
     public IncidentResponse updateIncident(Long incidentId,
                                     Long userId,
                                     IncidentRequest request)
