@@ -39,7 +39,7 @@ public class LoginAuthenticationSuccessHandler implements AuthenticationSuccessH
         response.setStatus(HttpStatus.OK.value());
 
         Map<String, String> tokens = Map.of(
-                "accessToken", newAccessToken,
+                "token", newAccessToken,
                 "refreshToken", newRefreshToken
         );
 
