@@ -7,6 +7,6 @@ public record IncidentAdminResponse(
         String title,
         String type,
         String address,
-        String login,
-        LocalDateTime created
+        LocalDateTime created,
+        String fullName
 ) {}

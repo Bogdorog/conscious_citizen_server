@@ -23,5 +23,6 @@ public abstract class IncidentMapper {
     public abstract IncidentShortResponse toShortDto(Incident incident);
     @Mapping(target = "type", expression = "java(incident.getType().getName())")
     @Mapping(target = "created", source = "createdAt")
+    @Mapping(target = "fullName", expression = "java(userApi.getUserById(incident.getUserId()).fullName())")
     public abstract IncidentAdminResponse toAdminDto(Incident incident);
 }
