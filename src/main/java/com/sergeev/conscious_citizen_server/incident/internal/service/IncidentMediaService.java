@@ -22,11 +22,11 @@ public class IncidentMediaService {
                                                         Long userId) throws Exception{
 
         Incident incident = incidentRepository.findById(incidentId)
-                .orElseThrow(() -> new RuntimeException("Incident not found"));
+                .orElseThrow(() -> new RuntimeException("Инцидент не найден"));
 
         // 🔐 проверка владельца
         if (!incident.getUserId().equals(userId)) {
-            throw new RuntimeException("Access denied");
+            throw new RuntimeException("Доступ запрещен");
         }
 
         return mediaApi.upload(file, userId, incidentId);

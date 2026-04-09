@@ -7,5 +7,6 @@ public record UserDto(
         String phone,
         String email,
         String address,
-        String role
+        String role,
+        String avatarUrl
 ) {}

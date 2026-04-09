@@ -1,5 +1,6 @@
 package com.sergeev.conscious_citizen_server.user.internal.service;
 
+import com.sergeev.conscious_citizen_server.media.api.MediaApi;
 import com.sergeev.conscious_citizen_server.user.api.dto.AuthResult;
 import com.sergeev.conscious_citizen_server.user.api.dto.UserDto;
 import com.sergeev.conscious_citizen_server.user.api.dto.UsersForAdmin;
@@ -18,12 +19,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +40,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final PasswordResetTokenRepository tokenRepository;
     private final PasswordChangeService passwordChangeService;
+    private final MediaApi mediaApi;
 
     @Transactional
     @CachePut(value = "user", key = "#request.login()")
@@ -186,5 +193,39 @@ public class UserService {
 
         repository.save(user);
         tokenRepository.save(resetToken);
+    }
+
+    @Transactional
+    public CompletableFuture<UserDto> uploadAvatar(Long userId, MultipartFile file) throws Exception {
+        User user = repository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Пользователь не найден"));
+
+        UUID oldAvatarId = user.getAvatarMediaId();
+
+        return mediaApi.upload(file, userId, null)
+                .thenApply(dto -> {
+                    // Удаляем старый аватар если был
+                    if (oldAvatarId != null && !oldAvatarId.equals(dto.id())) {
+                        try { mediaApi.delete(oldAvatarId); } catch (Exception ignored) {}
+                    }
+
+                    user.setAvatarMediaId(dto.id());
+                    repository.save(user);
+                    return userMapper.toResponse(user);
+                });
+    }
+
+    @Transactional
+    public UserDto deleteAvatar(Long userId) {
+        User user = repository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Пользователь не найден"));
+
+        if (user.getAvatarMediaId() != null) {
+            try { mediaApi.delete(user.getAvatarMediaId()); } catch (Exception ignored) {}
+            user.setAvatarMediaId(null);
+            repository.save(user);
+        }
+
+        return userMapper.toResponse(user);
     }
 }

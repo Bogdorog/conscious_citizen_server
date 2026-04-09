@@ -1,14 +1,17 @@
 package com.sergeev.conscious_citizen_server.user.internal.controller;
 
 import com.sergeev.conscious_citizen_server.user.api.UserApi;
+import com.sergeev.conscious_citizen_server.user.api.dto.UserDto;
 import com.sergeev.conscious_citizen_server.user.api.dto.UsersForAdmin;
 import com.sergeev.conscious_citizen_server.user.api.dto.request.PasswordResetConfirmRequest;
 import com.sergeev.conscious_citizen_server.user.api.dto.request.PasswordResetRequest;
 import com.sergeev.conscious_citizen_server.user.api.dto.request.UpdateProfileRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/user")
@@ -45,5 +48,18 @@ class UserController {
     @GetMapping("/admin/userstats")
     public List<UsersForAdmin> getUsersForAdmin() {
         return api.getUsersForAdmin();
+    }
+
+    @PutMapping("/{login}/avatar")
+    public CompletableFuture<UserDto> uploadAvatar(
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestParam("file") MultipartFile file
+    ) throws Exception {
+        return api.uploadAvatar(userId, file);
+    }
+
+    @DeleteMapping("/{login}/avatar")
+    public UserDto deleteAvatar(@RequestHeader("X-User-Id") Long userId) {
+        return api.deleteAvatar(userId);
     }
 }

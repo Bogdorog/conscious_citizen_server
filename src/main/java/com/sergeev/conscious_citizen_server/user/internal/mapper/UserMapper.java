@@ -1,19 +1,28 @@
 package com.sergeev.conscious_citizen_server.user.internal.mapper;
 
+import com.sergeev.conscious_citizen_server.media.api.MediaApi;
 import com.sergeev.conscious_citizen_server.user.api.dto.UserDto;
 import com.sergeev.conscious_citizen_server.user.internal.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Mapper(componentModel = "spring")
-public interface UserMapper {
-    @Mapping(target = "email", source = "username")
+public abstract class UserMapper {
+    @Autowired
+    protected MediaApi mediaApi;
+
+    @Mapping(target = "login", source = "username")
     @Mapping(target = "passwordHash", ignore = true)
     @Mapping(target = "active", ignore = true)
     @Mapping(target = "role", source = "role", ignore = true)
-    User toEntity(UserDto dto);
+    public abstract User toEntity(UserDto dto);
 
     @Mapping(target = "role", expression = "java(user.getRole().getName())")
-    @Mapping(target = "username", source = "email")
-    UserDto toResponse(User user);
+    @Mapping(target = "username", source = "login")
+    @Mapping(target = "avatarUrl", expression = """
+            java(user.getAvatarMediaId() != null
+                            ? mediaApi.buildDownloadUrl(user.getAvatarMediaId())
+                            : null)""")
+    public abstract UserDto toResponse(User user);
 }

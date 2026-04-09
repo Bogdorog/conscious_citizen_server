@@ -7,8 +7,10 @@ import com.sergeev.conscious_citizen_server.user.api.dto.UsersForAdmin;
 import com.sergeev.conscious_citizen_server.user.api.dto.request.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 @RequiredArgsConstructor
@@ -49,5 +51,14 @@ class UserPublicApiImpl implements UserApi {
     public List<UsersForAdmin> getUsersForAdmin()
     {
         return service.getUsersForAdmin();
+    }
+
+    public CompletableFuture<UserDto> uploadAvatar(Long userId, MultipartFile file) throws Exception {
+        return service.uploadAvatar(userId, file);
+    }
+
+    public UserDto deleteAvatar(Long userId)
+    {
+        return service.deleteAvatar(userId);
     }
 }

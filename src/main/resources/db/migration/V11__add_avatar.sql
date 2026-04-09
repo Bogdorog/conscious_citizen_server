@@ -1,0 +1,2 @@
+ALTER TABLE users ADD COLUMN avatar_media_id UUID REFERENCES photos(id) ON DELETE SET NULL;
+ALTER TABLE photos ALTER COLUMN incident_id DROP NOT NULL;

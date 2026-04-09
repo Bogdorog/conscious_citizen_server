@@ -25,7 +25,7 @@ public class MediaAsset {
     @Column(name = "user_id", nullable = false)
     private Long ownerId;
 
-    @Column(name = "incident_id", nullable = false)
+    @Column(name = "incident_id")
     private Long incidentId;
 
     @Column(name = "file_name", nullable = false)

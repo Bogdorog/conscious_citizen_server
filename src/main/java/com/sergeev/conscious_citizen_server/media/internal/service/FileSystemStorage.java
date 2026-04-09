@@ -2,6 +2,7 @@ package com.sergeev.conscious_citizen_server.media.internal.service;
 
 import com.sergeev.conscious_citizen_server.media.api.FileStorage;
 import com.sergeev.conscious_citizen_server.media.api.dto.StorageSaveResult;
+import lombok.Getter;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +22,7 @@ import java.util.concurrent.Executors;
 @Component
 public class FileSystemStorage implements FileStorage {
 
+    @Getter
     private final Path storageRoot;
     private final ExecutorService ioExecutor = Executors.newCachedThreadPool();
 
@@ -29,10 +31,6 @@ public class FileSystemStorage implements FileStorage {
     public FileSystemStorage(@Value("${app.media.storage-root:media_storage}") String root) throws IOException {
         this.storageRoot = Paths.get(root).toAbsolutePath().normalize();
         Files.createDirectories(this.storageRoot);
-    }
-
-    public Path getStorageRoot() {
-        return storageRoot;
     }
 
     @Override
@@ -62,7 +60,6 @@ public class FileSystemStorage implements FileStorage {
                     }
                 }
                 UUID id = UUID.nameUUIDFromBytes(checksum.getBytes());
-                // Возвращаем всё сразу — сервис больше ничего не пересчитывает
                 return new StorageSaveResult(id, checksum, relPath);
 
             } catch (IOException e) {
@@ -73,11 +70,10 @@ public class FileSystemStorage implements FileStorage {
 
     private void validateFile(MultipartFile file) {
         if (file.getSize() > MAX_SIZE) {
-            throw new IllegalArgumentException("File is too large. Max 5 MB");
+            throw new IllegalArgumentException("Файл слишком большой. Максимальный размер 5 MB");
         }
         String original = file.getOriginalFilename() == null ? "" : file.getOriginalFilename().toLowerCase();
         String ext = FilenameUtils.getExtension(original);
-        if (ext == null) ext = "";
         // Проверка на разрешенный формат
         try {
             byte[] header = new byte[12];
@@ -85,7 +81,7 @@ public class FileSystemStorage implements FileStorage {
                 int read = is.read(header, 0, header.length);
             }
             if (!isValidImageByMagic(header, ext)) {
-                throw new IllegalArgumentException("Unsupported image type. Allowed: png, jpg, webp");
+                throw new IllegalArgumentException("Данный тип изображения не поддерживается. Список поддерживаемых расширений: png, jpg, webp");
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);

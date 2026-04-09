@@ -3,6 +3,8 @@ package com.sergeev.conscious_citizen_server.user.internal.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "users")
 @Getter
@@ -25,6 +27,9 @@ public class User {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
+
+    @Column(name = "avatar_media_id")
+    private UUID avatarMediaId;
 
     @Column(nullable = false)
     private String address;

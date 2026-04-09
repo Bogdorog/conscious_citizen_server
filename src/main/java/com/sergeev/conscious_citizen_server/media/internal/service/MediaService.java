@@ -53,16 +53,21 @@ public class MediaService implements MediaApi{
     public CompletableFuture<MediaAssetDto> upload(MultipartFile file, Long ownerId, Long incidentId) throws Exception {
         return fileStorage.save(file)
                 .thenApply(result -> tx.execute(status -> {
-                    // Дубликат? — возвращаем существующий
+                    // Дубликат? — обновляем контекстные поля и сохраняем
                     return mediaRepo.findById(result.id())
-                            .map(existing -> mediaMapper.toResponse(existing, buildDownloadUrl(existing.getId())))
+                            .map(existing -> {
+                                existing.setOwnerId(ownerId);
+                                existing.setIncidentId(incidentId);
+                                mediaRepo.save(existing);
+                                return mediaMapper.toResponse(existing, buildDownloadUrl(existing.getId()));
+                            })
                             .orElseGet(() -> {
                                 MediaAsset asset = new MediaAsset();
                                 asset.setId(result.id());
                                 asset.setOwnerId(ownerId);
                                 asset.setIncidentId(incidentId);
                                 asset.setFileName(file.getOriginalFilename());
-                                asset.setFilePath(result.filePath()); // путь из storage, без пересчёта
+                                asset.setFilePath(result.filePath());
                                 mediaRepo.save(asset);
                                 return mediaMapper.toResponse(asset, buildDownloadUrl(asset.getId()));
                             });
