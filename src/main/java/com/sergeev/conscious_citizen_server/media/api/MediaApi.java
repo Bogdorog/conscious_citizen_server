@@ -12,7 +12,9 @@ public interface MediaApi {
     CompletableFuture<MediaAssetDto> upload(MultipartFile file, Long ownerId, Long incidentId) throws Exception;
     MediaAssetDto getMeta(UUID id);
     InputStream download(UUID id) throws Exception;
-    void delete(UUID id) throws Exception;
+    void delete(UUID mediaAssetId, Long incidentId) throws Exception;
+    void deleteCompletely(UUID mediaAssetId);
+    void unlinkAvatar(UUID mediaAssetId, Long ownerId);
     String buildDownloadUrl(UUID id);
     List<MediaAssetDto> findByIncidentId(Long incidentId);
     Long getSize(MediaAssetDto a);

@@ -16,6 +16,7 @@ import com.sergeev.conscious_citizen_server.user.internal.mapper.UserMapper;
 import com.sergeev.conscious_citizen_server.user.internal.repository.PasswordResetTokenRepository;
 import com.sergeev.conscious_citizen_server.user.internal.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
@@ -32,6 +33,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class UserService {
     private final UserMapper userMapper;
@@ -202,11 +204,17 @@ public class UserService {
 
         UUID oldAvatarId = user.getAvatarMediaId();
 
+        // incidentId = null → файл сохраняется как "личный" (связь с incident_id IS NULL)
         return mediaApi.upload(file, userId, null)
                 .thenApply(dto -> {
-                    // Удаляем старый аватар если был
+                    // Если был старый аватар — удаляем ТОЛЬКО связь с incident_id = NULL
+                    // Сам файл остаётся, если используется в инцидентах
                     if (oldAvatarId != null && !oldAvatarId.equals(dto.id())) {
-                        try { mediaApi.delete(oldAvatarId); } catch (Exception ignored) {}
+                        try {
+                            mediaApi.unlinkAvatar(oldAvatarId, userId);
+                        } catch (Exception e) {
+                            log.warn("Не удалось отвязать старый аватар {}: {}", oldAvatarId, e.getMessage());
+                        }
                     }
 
                     user.setAvatarMediaId(dto.id());
@@ -221,9 +229,19 @@ public class UserService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Пользователь не найден"));
 
         if (user.getAvatarMediaId() != null) {
-            try { mediaApi.delete(user.getAvatarMediaId()); } catch (Exception ignored) {}
+            UUID avatarId = user.getAvatarMediaId();
+
+            // 1. Убираем ссылку из пользователя
             user.setAvatarMediaId(null);
             repository.save(user);
+
+            // 2. Удаляем связь "личного" типа (incident_id = NULL)
+            // Файл удалится физически только если не осталось других связей
+            try {
+                mediaApi.unlinkAvatar(avatarId, userId);
+            } catch (Exception e) {
+                log.warn("Не удалось удалить связь аватара {}: {}", avatarId, e.getMessage());
+            }
         }
 
         return userMapper.toResponse(user);

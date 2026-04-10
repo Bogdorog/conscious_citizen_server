@@ -121,7 +121,27 @@ public class FileSystemStorage implements FileStorage {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 Path absolutePath = storageRoot.resolve(filePath).normalize();
-                return Files.deleteIfExists(absolutePath);
+
+                // Проверка что файл находится в хранилище
+                if (!absolutePath.startsWith(storageRoot.normalize())) {
+                    throw new SecurityException("Попытка удаления файла вне хранилища: " + filePath);
+                }
+
+                boolean deleted = Files.deleteIfExists(absolutePath);
+
+                // Удаляем пустые родительские директории (dir1/dir2/baseName)
+                if (deleted) {
+                    Path dir = absolutePath.getParent();
+                    while (dir != null && !dir.equals(storageRoot) && Files.isDirectory(dir)) {
+                        try {
+                            Files.delete(dir);
+                            dir = dir.getParent();
+                        } catch (DirectoryNotEmptyException e) {
+                            break; // В директории ещё есть файлы — останавливаемся
+                        }
+                    }
+                }
+                return deleted;
             } catch (IOException e) {
                 throw new UncheckedIOException("Ошибка при удалении файла: " + filePath, e);
             }

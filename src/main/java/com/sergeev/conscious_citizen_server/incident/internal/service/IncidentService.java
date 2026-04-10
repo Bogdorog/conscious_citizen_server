@@ -113,7 +113,7 @@ public class IncidentService {
         Incident incident = repository.findById(incidentId)
                 .orElseThrow(() -> new RuntimeException("Инцидент не найден"));
 
-        // проверка владельца
+        // Проверка прав: только владелец инцидента или админ
         if (!incident.getUserId().equals(userId)  && !userApi.getRole(userId).equals("ADMIN") ) {
             throw new RuntimeException("Доступ запрещен");
         }
@@ -159,7 +159,7 @@ public class IncidentService {
         Incident incident = repository.findById(incidentId)
                 .orElseThrow(() -> new RuntimeException("Инцидент не найден"));
 
-        // Проверка владельца
+        // Проверка прав: только владелец инцидента или админ
         if (!incident.getUserId().equals(userId) && !userApi.getRole(userId).equals("ADMIN") ) {
             throw new RuntimeException("Доступ запрещен");
         }

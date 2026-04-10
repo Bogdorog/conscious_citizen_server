@@ -5,10 +5,12 @@ import com.sergeev.conscious_citizen_server.media.api.dto.MediaAssetDto;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.InputStream;
@@ -27,7 +29,7 @@ public class MediaController {
     }
 
     @GetMapping("/{id}/download")
-    public ResponseEntity<StreamingResponseBody> download(@PathVariable UUID id) throws Exception {
+    public ResponseEntity<StreamingResponseBody> download(@PathVariable UUID id) {
         MediaAssetDto meta = mediaApi.getMeta(id);
 
         // Определяем Content-Type по имени файла из метаданных
@@ -54,12 +56,6 @@ public class MediaController {
                 .contentLength(len)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
                 .body(body);
-    }
-
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable UUID id) throws Exception {
-        mediaApi.delete(id);
     }
 
     private MediaType resolveMediaType(String filename) {

@@ -1,4 +1,4 @@
-package com.sergeev.conscious_citizen_server.media.internal.model;
+package com.sergeev.conscious_citizen_server.media.internal.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,16 +22,9 @@ public class MediaAsset {
     @Id
     private UUID id;
 
-    @Column(name = "user_id", nullable = false)
-    private Long ownerId;
-
-    @Column(name = "incident_id")
-    private Long incidentId;
-
     @Column(name = "file_name", nullable = false)
     private String fileName;
 
     @Column(name = "file_path", nullable = false)
     private String filePath;
 }
-

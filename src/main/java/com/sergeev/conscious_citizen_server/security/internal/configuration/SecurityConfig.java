@@ -55,7 +55,7 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain filterChain(final HttpSecurity http,
-                                    final JwtAuthenticationConverter jwtAuthenticationConverter) throws Exception {
+                                    final JwtAuthenticationConverter jwtAuthenticationConverter) {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
@@ -73,6 +73,7 @@ public class SecurityConfig {
                         .requestMatchers(RESET_PASSWORD_POINT).permitAll()
                         .requestMatchers("/api/incidents/admin").hasRole("ADMIN")
                         .requestMatchers("/user/admin/userstats").hasRole("ADMIN")
+                        .requestMatchers("/api/incidents/{incidentId}/photos/{mediaId}/force").hasRole("ADMIN")
                         .requestMatchers("/api/incidents/{incidentId}/photos").permitAll()
                         .anyRequest().authenticated()
                 )
