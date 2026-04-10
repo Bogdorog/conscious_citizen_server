@@ -52,7 +52,7 @@ public class AuthController {
             description = "Ошибка на сервере."
     )
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
-        userApi.login(request).accessToken();
+        userApi.login(request);
         return ResponseEntity.ok("");
     }
 }

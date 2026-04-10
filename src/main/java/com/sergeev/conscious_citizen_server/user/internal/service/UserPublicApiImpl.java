@@ -1,7 +1,6 @@
 package com.sergeev.conscious_citizen_server.user.internal.service;
 
 import com.sergeev.conscious_citizen_server.user.api.UserApi;
-import com.sergeev.conscious_citizen_server.user.api.dto.AuthResult;
 import com.sergeev.conscious_citizen_server.user.api.dto.UserDto;
 import com.sergeev.conscious_citizen_server.user.api.dto.UsersForAdmin;
 import com.sergeev.conscious_citizen_server.user.api.dto.request.*;
@@ -32,8 +31,8 @@ class UserPublicApiImpl implements UserApi {
 
     public String getRole(Long id) {return service.getRole(id);}
 
-    public AuthResult login(LoginRequest request) {
-        return service.login(request);
+    public void login(LoginRequest request) {
+        service.login(request);
     }
 
     public void initiatePasswordReset(PasswordResetRequest request) {

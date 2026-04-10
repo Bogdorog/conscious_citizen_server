@@ -1,14 +1,11 @@
 package com.sergeev.conscious_citizen_server.user.internal.service;
 
 import com.sergeev.conscious_citizen_server.media.api.MediaApi;
-import com.sergeev.conscious_citizen_server.user.api.dto.AuthResult;
 import com.sergeev.conscious_citizen_server.user.api.dto.UserDto;
 import com.sergeev.conscious_citizen_server.user.api.dto.UsersForAdmin;
 import com.sergeev.conscious_citizen_server.user.api.dto.request.*;
 import com.sergeev.conscious_citizen_server.user.api.event.PasswordResetRequestedEvent;
-import com.sergeev.conscious_citizen_server.user.api.event.UserLoggedInEvent;
 import com.sergeev.conscious_citizen_server.user.api.event.UserProfileUpdatedEvent;
-import com.sergeev.conscious_citizen_server.user.api.event.UserRegisteredEvent;
 import com.sergeev.conscious_citizen_server.user.internal.entity.PasswordResetToken;
 import com.sergeev.conscious_citizen_server.user.internal.entity.Role;
 import com.sergeev.conscious_citizen_server.user.internal.entity.User;
@@ -46,49 +43,53 @@ public class UserService {
 
     @Transactional
     @CachePut(value = "user", key = "#request.login()")
-    public void register(RegisterUserRequest request) {
+    public UserDto register(RegisterUserRequest request) {
 
         if (repository.existsByEmail(request.email())) {
             throw new IllegalArgumentException("Пользователь с таким e-mail уже существует");
+        }
+
+        if (repository.existsByPhone(request.phone())) {
+            throw new IllegalArgumentException("Пользователь с таким номером телефона уже существует");
+        }
+
+        if (repository.existsByLogin(request.login())) {
+            throw new IllegalArgumentException("Пользователь с таким логином уже существует");
         }
 
         String hash = passwordEncoder.encode(request.password());
         // У всех по умолчанию роль пользователя
         Role role = new Role(2L, "USER");
 
-        User user = repository.save(
-                User.builder()
-                        .login(request.login())
-                        .fullName(request.fullName())
-                        .email(request.email())
-                        .phone(request.phone())
-                        .address(request.address())
-                        .passwordHash(hash)
-                        .role(role)
-                        .active(true)
-                        .build()
-        );
+        User user = User.builder()
+                .login(request.login())
+                .fullName(request.fullName())
+                .email(request.email())
+                .phone(request.phone())
+                .address(request.address())
+                .passwordHash(hash)
+                .role(role)
+                .active(true)
+                .build();
+        repository.save(user);
 
-        publisher.publishEvent(new UserRegisteredEvent(user.getId()));
+        // Чтобы работал кэш, нигде дальше использоваться не должен
+        return userMapper.toResponse(user);
     }
 
-    public AuthResult login(LoginRequest request) {
+    public void login(LoginRequest request) {
 
         User user = repository.findByLogin(request.login())
                             .orElseThrow(() ->
-                                    new IllegalArgumentException("User not found"));
+                                    new ResponseStatusException(HttpStatus.NOT_FOUND, "Пользователь не найден"));
 
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
-            throw new IllegalArgumentException("Invalid credentials");
+            throw new IllegalArgumentException("Неверный логин или пароль");
         }
 
         if (!user.isActive()) {
-            throw new IllegalStateException("User inactive");
+            throw new IllegalStateException("Статус пользователя не активен");
         }
-
-        publisher.publishEvent(new UserLoggedInEvent(user.getId()));
-
-        return new AuthResult(user.getId().toString());
     }
 
     @Transactional
@@ -97,7 +98,7 @@ public class UserService {
 
         User user = repository.findByLogin(request.login())
                 .orElseThrow(() ->
-                        new IllegalArgumentException("User not found"));
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Пользователь не найден"));
 
         user.setEmail(request.email());
         user.setFullName(request.fullName());
@@ -116,7 +117,7 @@ public class UserService {
         return userMapper.toResponse(user);
     }
 
-    @Cacheable(value = "user")
+    @Cacheable(value = "user", key = "#result.username()")
     public UserDto getById(Long id) {
         User user = repository.findById(id)
                 .orElseThrow();
@@ -144,7 +145,7 @@ public class UserService {
     public void initiatePasswordReset(PasswordResetRequest request) {
 
         User user = repository.findByEmail(request.email())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Пользователь не найден"));
 
         String rawToken = passwordChangeService.generateToken();
         String tokenHash = passwordChangeService.hashToken(rawToken);
@@ -204,7 +205,7 @@ public class UserService {
 
         UUID oldAvatarId = user.getAvatarMediaId();
 
-        // incidentId = null → файл сохраняется как "личный" (связь с incident_id IS NULL)
+        // incidentId = null, значит аватар
         return mediaApi.upload(file, userId, null)
                 .thenApply(dto -> {
                     // Если был старый аватар — удаляем ТОЛЬКО связь с incident_id = NULL
@@ -231,12 +232,10 @@ public class UserService {
         if (user.getAvatarMediaId() != null) {
             UUID avatarId = user.getAvatarMediaId();
 
-            // 1. Убираем ссылку из пользователя
+            // Удаляем ссылку из данных пользователя
             user.setAvatarMediaId(null);
             repository.save(user);
-
-            // 2. Удаляем связь "личного" типа (incident_id = NULL)
-            // Файл удалится физически только если не осталось других связей
+            // Удаляем связь из таблицы, если связей больше нет, файл удалится
             try {
                 mediaApi.unlinkAvatar(avatarId, userId);
             } catch (Exception e) {

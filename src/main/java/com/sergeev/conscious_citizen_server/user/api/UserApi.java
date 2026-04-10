@@ -1,6 +1,5 @@
 package com.sergeev.conscious_citizen_server.user.api;
 
-import com.sergeev.conscious_citizen_server.user.api.dto.AuthResult;
 import com.sergeev.conscious_citizen_server.user.api.dto.UserDto;
 import com.sergeev.conscious_citizen_server.user.api.dto.UsersForAdmin;
 import com.sergeev.conscious_citizen_server.user.api.dto.request.*;
@@ -13,7 +12,7 @@ public interface UserApi {
 
     void registerUser(RegisterUserRequest request);
 
-    AuthResult login(LoginRequest request);
+    void login(LoginRequest request);
 
     void initiatePasswordReset(PasswordResetRequest request);
 
