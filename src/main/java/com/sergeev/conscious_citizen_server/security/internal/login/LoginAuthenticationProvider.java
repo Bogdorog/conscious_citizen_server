@@ -15,6 +15,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
+
 @Component
 @Slf4j
 public class LoginAuthenticationProvider implements AuthenticationProvider {
@@ -33,13 +35,13 @@ public class LoginAuthenticationProvider implements AuthenticationProvider {
             throws AuthenticationException {
 
         String username = (String) authentication.getPrincipal();
-        String password = authentication.getCredentials().toString();
+        String password = Objects.requireNonNull(authentication.getCredentials()).toString();
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
         if (!passwordEncoder.matches(password, userDetails.getPassword())) {
             log.debug("Authentication failed: invalid password for user '{}'", username);
-            throw new BadCredentialsException("Invalid username or password");
+            throw new BadCredentialsException("Invalid login or password");
         }
 
         log.debug("Authentication successful for user '{}'", username);

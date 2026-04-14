@@ -5,7 +5,6 @@ import com.sergeev.conscious_citizen_server.user.api.dto.UserDto;
 import com.sergeev.conscious_citizen_server.user.api.dto.UsersForAdmin;
 import com.sergeev.conscious_citizen_server.user.api.dto.request.*;
 import com.sergeev.conscious_citizen_server.user.api.event.PasswordResetRequestedEvent;
-import com.sergeev.conscious_citizen_server.user.api.event.UserProfileUpdatedEvent;
 import com.sergeev.conscious_citizen_server.user.internal.entity.PasswordResetToken;
 import com.sergeev.conscious_citizen_server.user.internal.entity.Role;
 import com.sergeev.conscious_citizen_server.user.internal.entity.User;
@@ -105,8 +104,6 @@ public class UserService {
         user.setPhone(request.phone());
         user.setAddress(request.address());
 
-        publisher.publishEvent(new UserProfileUpdatedEvent(user.getId()));
-
         return userMapper.toResponse(user);
     }
 
@@ -117,7 +114,7 @@ public class UserService {
         return userMapper.toResponse(user);
     }
 
-    @Cacheable(value = "user", key = "#result.username()")
+    // Служебный запрос для поиска, кэш не нужен
     public UserDto getById(Long id) {
         User user = repository.findById(id)
                 .orElseThrow();
@@ -199,6 +196,7 @@ public class UserService {
     }
 
     @Transactional
+    @CachePut(value = "user", key = "#result.login()")
     public CompletableFuture<UserDto> uploadAvatar(Long userId, MultipartFile file) throws Exception {
         User user = repository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Пользователь не найден"));
@@ -225,6 +223,7 @@ public class UserService {
     }
 
     @Transactional
+    @CachePut(value = "user", key = "#result.login()")
     public UserDto deleteAvatar(Long userId) {
         User user = repository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Пользователь не найден"));
