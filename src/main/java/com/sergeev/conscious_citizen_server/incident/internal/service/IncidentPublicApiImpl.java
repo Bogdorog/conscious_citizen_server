@@ -52,6 +52,12 @@ public class IncidentPublicApiImpl implements IncidentApi {
     }
 
     @Override
+    public String getFilePathById(Long id)
+    {
+        return incidentService.getFilePathById(id);
+    }
+
+    @Override
     public IncidentResponse updateIncident(Long incidentId,
                                     Long userId,
                                     IncidentRequest request)

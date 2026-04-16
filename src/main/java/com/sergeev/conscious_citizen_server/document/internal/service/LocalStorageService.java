@@ -32,12 +32,12 @@ public class LocalStorageService implements StorageService {
             Path path = dir.resolve(storageKey);
 
             Files.write(path, content);
-            log.info("Saved document: {}", storageKey);
+            log.debug("Сохранен документ: {}", storageKey);
 
             return storageKey;
 
         } catch (IOException e) {
-            throw new DocumentStorageException("Failed to save file: " + filename, e);
+            throw new DocumentStorageException("Ошибка сохранения файла: " + filename, e);
         }
     }
 
@@ -48,7 +48,7 @@ public class LocalStorageService implements StorageService {
             return Files.readAllBytes(path);
 
         } catch (IOException e) {
-            throw new DocumentStorageException("Failed to read file: " + storageKey, e);
+            throw new DocumentStorageException("Ошибка чтения файла: " + storageKey, e);
         }
     }
 
@@ -57,10 +57,10 @@ public class LocalStorageService implements StorageService {
         try {
             Path path = Paths.get(documentsPath).resolve(storageKey);
             Files.deleteIfExists(path);
-            log.info("Deleted document: {}", storageKey);
+            log.debug("Удален документ: {}", storageKey);
 
         } catch (IOException e) {
-            throw new DocumentStorageException("Failed to delete file: " + storageKey, e);
+            throw new DocumentStorageException("Ошибка удаления файла: " + storageKey, e);
         }
     }
 }

@@ -32,12 +32,12 @@ public class DocumentTemplateService {
 
         } catch (IOException e) {
             // Пробуем fallback-шаблон
-            log.warn("Template '{}' not found, trying default", name);
+            log.warn("Шаблон '{}' не найден, пробуем стандартный", name);
             try {
                 Path fallback = Paths.get(templatesPath, "default.html");
                 return Files.readString(fallback);
             } catch (IOException ex) {
-                throw new TemplateNotFoundException("Template not found: " + name, ex);
+                throw new TemplateNotFoundException("Шаблон не найден: " + name, ex);
             }
         }
     }
@@ -71,7 +71,7 @@ public class DocumentTemplateService {
         }
 
         if (!missing.isEmpty()) {
-            log.warn("Template variables not provided, will use placeholders: {}", missing);
+            log.debug("Переменные для шаблона не предоставлены, используем плейсхолдеры: {}", missing);
         }
     }
 
@@ -87,9 +87,7 @@ public class DocumentTemplateService {
         }
 
         if (!missing.isEmpty()) {
-            log.warn("Template variables not provided: {}", missing);
-            // Предупреждение, а не исключение — незаполненные переменные останутся в PDF
-            // Поменяй на throw, если хочешь жёсткую валидацию
+            log.debug("Переменные для шаблона не предоставлены: {}", missing);
         }
     }
 }

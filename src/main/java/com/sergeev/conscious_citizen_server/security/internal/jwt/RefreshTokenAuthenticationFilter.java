@@ -7,6 +7,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -18,6 +19,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 
 import java.io.IOException;
 
+@Slf4j
 public class RefreshTokenAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
     private final AuthenticationSuccessHandler successHandler;
@@ -43,16 +45,14 @@ public class RefreshTokenAuthenticationFilter extends AbstractAuthenticationProc
 
     private void validateRequest(final HttpServletRequest request) {
         if (!HttpMethod.POST.name().equals(request.getMethod())) {
-            if(logger.isDebugEnabled()) {
-                logger.debug("Authentication method not supported. Request method: " + request.getMethod());
-            }
-            throw new AuthMethodNotSupportedException("Authentication method not supported");
+            log.debug("Метод аутентификации не поддерживается. Запрос: {}", request.getMethod());
+            throw new AuthMethodNotSupportedException("Метод аутентификации не поддерживается");
         }
     }
 
     private static void validateRefreshToken(final RefreshTokenDTO refreshTokenDto) {
         if (StringUtils.isBlank(refreshTokenDto.refreshToken())) {
-            throw new AuthenticationServiceException("Username or Password not provided");
+            throw new AuthenticationServiceException("Отсутствует логин или пароль");
         }
     }
 

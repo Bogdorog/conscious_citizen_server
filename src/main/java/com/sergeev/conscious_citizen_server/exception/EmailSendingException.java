@@ -1,4 +1,4 @@
-package com.sergeev.conscious_citizen_server.notification.internal.exception;
+package com.sergeev.conscious_citizen_server.exception;
 
 public class EmailSendingException extends RuntimeException {
 

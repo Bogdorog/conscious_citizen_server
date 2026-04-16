@@ -27,4 +27,6 @@ public interface IncidentApi {
                                     IncidentRequest request);
 
     void deleteIncidentById(Long id, Long userId);
+
+    String getFilePathById(Long id);
 }

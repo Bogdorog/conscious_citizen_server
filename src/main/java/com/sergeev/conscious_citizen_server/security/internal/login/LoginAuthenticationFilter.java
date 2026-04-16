@@ -41,8 +41,8 @@ public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingF
             @NonNull final HttpServletResponse response) throws AuthenticationException {
 
         if (!HttpMethod.POST.name().equals(request.getMethod())) {
-            log.debug("Authentication method not supported. Request method: {}", request.getMethod());
-            throw new AuthMethodNotSupportedException("Authentication method not supported");
+            log.debug("Метод аутентификации не поддерживается. Запрос: {}", request.getMethod());
+            throw new AuthMethodNotSupportedException("Метод аутентификации не поддерживается");
         }
 
         LoginRequest loginRequest;
@@ -53,7 +53,7 @@ public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingF
         }
 
         if (StringUtils.isBlank(loginRequest.login()) || StringUtils.isBlank(loginRequest.password())) {
-            throw new AuthenticationServiceException("Username or Password not provided");
+            throw new AuthenticationServiceException("Отсутствует логин или пароль");
         }
 
         UsernamePasswordAuthenticationToken token =

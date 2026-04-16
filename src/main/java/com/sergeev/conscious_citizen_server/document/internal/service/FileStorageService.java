@@ -31,7 +31,7 @@ public class FileStorageService {
             return path.toString();
 
         } catch (IOException e) {
-            throw new RuntimeException("Failed to store file", e);
+            throw new RuntimeException("Ошибка сохранения файла", e);
         }
     }
 
@@ -39,7 +39,7 @@ public class FileStorageService {
         try {
             return Files.readAllBytes(Paths.get(path));
         } catch (IOException e) {
-            throw new RuntimeException("Failed to read file", e);
+            throw new RuntimeException("Ошибка чтения файла", e);
         }
     }
 }

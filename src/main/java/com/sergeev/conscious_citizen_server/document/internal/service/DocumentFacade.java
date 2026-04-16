@@ -35,6 +35,6 @@ public class DocumentFacade {
                 )
         );
 
-        log.info("Document sent to {} for incident {}", user.email(), incidentId);
+        log.debug("Документ отправлен на {} для инцидента {}", user.email(), incidentId);
     }
 }

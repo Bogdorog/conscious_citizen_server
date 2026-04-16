@@ -66,7 +66,7 @@ public class JwtTokenProvider {
 
         refreshTokenRepository.save(refreshToken);
 
-        log.debug("Refresh token generated for user {}", userId);
+        log.debug("Создан токен обновления для пользователя {}", userId);
         return tokenValue;
     }
 

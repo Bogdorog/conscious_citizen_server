@@ -40,11 +40,11 @@ public class LoginAuthenticationProvider implements AuthenticationProvider {
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
         if (!passwordEncoder.matches(password, userDetails.getPassword())) {
-            log.debug("Authentication failed: invalid password for user '{}'", username);
-            throw new BadCredentialsException("Invalid login or password");
+            log.debug("Аутентификация провалилась: неправильный логин или пароль '{}'", username);
+            throw new BadCredentialsException("Неправильный логин или пароль");
         }
 
-        log.debug("Authentication successful for user '{}'", username);
+        log.debug("Успешный вход для пользователя '{}'", username);
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 

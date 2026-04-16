@@ -32,8 +32,8 @@ public class RefreshTokenAuthenticationProvider implements AuthenticationProvide
         try {
             refreshToken = jwtTokenProvider.validateRefreshToken(rawToken);
         } catch (InvalidRefreshTokenException e) {
-            log.warn("Invalid refresh token attempt: {}", e.getMessage());
-            throw new BadCredentialsException("Invalid or expired refresh token");
+            log.warn("Попытка доступа с неправильным токеном обновления: {}", e.getMessage());
+            throw new BadCredentialsException("Неправильный или устаревший токен");
         }
 
         // Загружаем владельца по userId из записи токена
@@ -42,16 +42,16 @@ public class RefreshTokenAuthenticationProvider implements AuthenticationProvide
         try {
             userDetails = userDetailsService.loadUserById(refreshToken.getUserId());
         } catch (Exception e) {
-            log.warn("User not found for refresh token, userId: {}", refreshToken.getUserId());
-            throw new BadCredentialsException("Token owner not found");
+            log.warn("Пользователь с id {} не найден при проверке токена", refreshToken.getUserId());
+            throw new BadCredentialsException("Владелец токена не найден");
         }
 
         if (!userDetails.isEnabled()) {
-            throw new DisabledException("User account is disabled");
+            throw new DisabledException("Аккаунт пользователя отключен");
         }
 
         if (!userDetails.isAccountNonLocked()) {
-            throw new LockedException("User account is locked");
+            throw new LockedException("Аккаунт пользователя заблокирован");
         }
 
         return new RefreshJwtAuthenticationToken(userDetails);

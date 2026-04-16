@@ -16,7 +16,7 @@ public class PdfGeneratorService {
     @Value("${app.storage.templates-path}")
     private String templatesPath;
 
-    public byte[] generate(String html, String title) {
+    public byte[] generate(String html, Long incidentId) {
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
 
             PdfRendererBuilder builder = new PdfRendererBuilder();
@@ -24,11 +24,11 @@ public class PdfGeneratorService {
             builder.toStream(os);
             builder.run();
 
-            log.info("Generated PDF: {}", title);
+            log.debug("Создан pdf: {}", incidentId);
             return os.toByteArray();
 
         } catch (Exception e) {
-            throw new PdfGenerationException("PDF generation failed: " + title, e);
+            throw new PdfGenerationException("Создание pdf файла провалилось: " + incidentId, e);
         }
     }
 }

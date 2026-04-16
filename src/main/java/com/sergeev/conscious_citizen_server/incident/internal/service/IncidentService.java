@@ -58,6 +58,11 @@ public class IncidentService {
         return repository.countByUserId(userId);
     }
 
+    String getFilePathById(Long id)
+    {
+        return repository.findById(id).get().getFilePath();
+    }
+
     @Cacheable(value = "incident-details", key = "#id")
     public IncidentResponse getById(Long id) {
 

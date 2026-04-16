@@ -1,6 +1,6 @@
 package com.sergeev.conscious_citizen_server.notification.internal.service;
 
-import com.sergeev.conscious_citizen_server.notification.internal.exception.EmailSendingException;
+import com.sergeev.conscious_citizen_server.exception.EmailSendingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,7 +35,7 @@ public class EmailService {
             mailSender.send(message);
 
         } catch (Exception e) {
-            throw new EmailSendingException("Failed to send email", e);
+            throw new EmailSendingException("Ошибка при отправке письма", e);
         }
     }
 
@@ -62,7 +62,7 @@ public class EmailService {
             mailSender.send(message);
 
         } catch (Exception e) {
-            throw new EmailSendingException("Failed to send email with attachment", e);
+            throw new EmailSendingException("Ошибка при отправке письма с вложением", e);
         }
     }
 }
